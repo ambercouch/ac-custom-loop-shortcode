@@ -70,10 +70,11 @@ if ( !function_exists( 'ac_wp_custom_loop_short_code' ) ) {
             'order' => 'ASC'
         ));
 
+        ob_start();
         if (have_posts()) :
             while (have_posts()):
                 the_post();
-                ob_start();
+
                 ?>
                 <?php get_template_part( 'partials/blog-grid/content', get_post_format() ); ?>
             <?php
@@ -82,9 +83,9 @@ if ( !function_exists( 'ac_wp_custom_loop_short_code' ) ) {
          endif;
 
         $wp_query = $temp_q;
-
-
-        return  ob_get_clean();
+        $var = ob_get_contents();
+        ob_end_clean();
+        return $var;
 
     }
 
