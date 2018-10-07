@@ -2,9 +2,9 @@
 /*
   Plugin Name: Custom Loop Shortcode by AmberCouch
   Plugin URI: https://github.com/ambercouch/ac-wp-custom-loop-shortcode
-  Description: Shortcode for adding custom loops to content.
+  Description: Shortcode  ( [ac_custom_loop] ) that allows you to easily list post, pages or custom posts with the WordPress content editor or in any widget that supports short code.
   Version: 1
-  Author: Richie Arnold
+  Author: AmberCouch
   Author URI: http://ambercouch.co.uk
   Author Email: richard@ambercouch.co.uk
   Text Domain: ac-wp-custom-loop-shortcode
