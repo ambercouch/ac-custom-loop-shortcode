@@ -1,0 +1,14 @@
+.c-accl-post-list{
+    display:flex;
+    flex-wrap: wrap;
+}
+
+.c-accl-post-list__post-thumb{
+    width: 25%;
+}
+
+.c-accl-post-thumb__header{
+    width: 100% !important;
+    float: none;
+    display: block;
+}
