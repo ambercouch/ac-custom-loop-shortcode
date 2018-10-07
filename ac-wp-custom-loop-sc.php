@@ -23,32 +23,37 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-defined( 'ABSPATH' ) or die( 'You do not have the required permissions' );
+defined('ABSPATH') or die('You do not have the required permissions');
 
-if ( !function_exists( 'ac_wp_custom_loop_short_code' ) ) {
+if (!function_exists('ac_wp_custom_loop_short_code'))
+{
 
-    function ac_wp_custom_loop_short_code ($atts) {
+    function ac_wp_custom_loop_short_code($atts)
+    {
 
         extract(shortcode_atts(array(
             'type' => 'post',
-            'show' => 4
+            'show' => 4,
+            'template' => false
         ), $atts));
 
         $args = [
-          'public' => true
+            'public' => true
         ];
         $output = '';
         $post_types = get_post_types($args, 'names');
 
-        if( ! in_array($type, $post_types)){
+        if (!in_array($type, $post_types))
+        {
             $output .= '<p>';
-            $output .= '<strong>'.$type.'</strong> ';
+            $output .= '<strong>' . $type . '</strong> ';
             $output .= __('in not a public post type on this website. The following post type are available: -', 'ac-wp-custom-loop-shortcode');
             $output .= '</p>';
             $output .= '<ul>';
 
-            foreach($post_types  as $key => $cpt){
-                $output .= '<li>'.$cpt.'</li>';
+            foreach ($post_types as $key => $cpt)
+            {
+                $output .= '<li>' . $cpt . '</li>';
             }
             $output .= '</ul>';
             $output .= '<p>';
@@ -70,22 +75,25 @@ if ( !function_exists( 'ac_wp_custom_loop_short_code' ) ) {
             'order' => 'ASC'
         ));
 
-        ob_start();
+
         if (have_posts()) :
+            $output .= '<div class="c-accl-post-list" >';
             while (have_posts()):
                 the_post();
-
+                ob_start();
                 ?>
-                <?php get_template_part( 'partials/blog-grid/content', get_post_format() ); ?>
-            <?php
-
-         endwhile;
-         endif;
+            <?php require 'loop-template.php' ?>
+                <?php //get_template_part('template-parts/post/content'); ?>
+                <?php
+                $output .= ob_get_contents();
+                ob_end_clean();
+            endwhile;
+            $output .= '</div>';
+        endif;
 
         $wp_query = $temp_q;
-        $var = ob_get_contents();
-        ob_end_clean();
-        return $var;
+
+        return $output;
 
     }
 
