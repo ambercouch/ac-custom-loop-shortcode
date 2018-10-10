@@ -34,10 +34,12 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
     function ac_wp_custom_loop_short_code($atts)
     {
 
+
         extract(shortcode_atts(array(
             'type' => 'post',
             'show' => 4,
-            'template' => false
+            'template' => 'loop-template.php',
+            'css' => 'true'
         ), $atts));
 
         $args = [
@@ -45,6 +47,22 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         ];
         $output = '';
         $post_types = get_post_types($args, 'names');
+        $theme_directory = get_stylesheet_directory().'/';
+        $theme_template = $theme_directory.$template;
+
+        if($css == 'true'){
+            $handle = 'ac_wp_custom_loop_styles';
+            $list = 'enqueued';
+
+            if (! wp_script_is( $handle, $list )) {
+                wp_register_style( 'ac_wp_custom_loop_styles', plugin_dir_url( __FILE__ ) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181007' );
+                wp_enqueue_style( 'ac_wp_custom_loop_styles' );
+            }
+        }
+
+        if( file_exists($theme_template)){
+            $template = $theme_template;
+        }
 
         if (!in_array($type, $post_types))
         {
@@ -85,7 +103,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
                 the_post();
                 ob_start();
                 ?>
-            <?php require 'loop-template.php' ?>
+            <?php require($template) ?>
                 <?php //get_template_part('template-parts/post/content'); ?>
                 <?php
                 $output .= ob_get_contents();
