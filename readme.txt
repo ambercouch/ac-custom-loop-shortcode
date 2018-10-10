@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== AC Custom Loop Shortcode ===
 Contributors: ambercouch
 Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts,
@@ -33,5 +33,15 @@ Not with out hacking the actual plugin files but I will be adding that function 
 
 == Screenshots ==
 
-1. Add the code to any content area that accepts short code.
+1. Add the code to any content area that accepts shortcode.
 2. Posts, Pages or Custom post types are shown on the front end of your website.
+
+== Upgrade Notice ==
+
+= 0.0.1 =
+Initial version
+
+== Changelog ==
+
+= 0.0.1 (2018-10-07) =
+* Initial version on WP repository
