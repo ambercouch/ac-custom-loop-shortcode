@@ -68,7 +68,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         {
             $output .= '<p>';
             $output .= '<strong>' . $type . '</strong> ';
-            $output .= __('in not a public post type on this website. The following post type are available: -', 'ac-wp-custom-loop-shortcode');
+            $output .= __('is not a public post type on this website. The following post type are available: -', 'ac-wp-custom-loop-shortcode');
             $output .= '</p>';
             $output .= '<ul>';
 
@@ -80,7 +80,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             $output .= '<p>';
             $output .= __('Please edit the short code to use one of the available post types.', 'ac-wp-custom-loop-shortcode');
             $output .= '</p>';
-            $output .= '<code>[ ac_custome_loop type="post" show="4"]</code>';
+            $output .= '<code>[ ac_custom_loop type="post" show="4"]</code>';
 
             return $output;
         }
