@@ -3,8 +3,8 @@ Contributors: ambercouch
 Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts,
 Requires at least: 4.6
-Tested up to: 4.7
-Stable tag: 1
+Tested up to: 4.9.8
+Stable tag: 0.0.2
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -17,19 +17,19 @@ A simple Wordpress plugin that creates Wordpress shortcode that will loop throug
 
 == Installation ==
 
-Use WordPress' Add New Plugin feature, searching "Duplicate Post", or download the archive and:
+Use WordPress' Add New Plugin feature, searching "AC custom loop", or download the archive and:
 
 1. Upload the plugin files to the `/wp-content/plugins/ac-wp-custom-loop` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
-3. Add the shortcode [ac_custom_loop] to the content area of any page, post or custom post type.
-4. By default the shortcode will display your latest 4 post you can use the 'type' and 'show' arguments to customise the type of post that are shown and how many eg. [ac_custom_loop type="page" show="3"] would show the last three published pages.
+3. Add the shortcode [ac_custom_loop] to the content area of any page, post or custom post type or to any widget that supports shortcode.
+4. By default the shortcode will display your latest 4 post, you can use the 'type' and 'show' arguments to customise the type of post that are shown and how many eg. [ac_custom_loop type="page" show="3"] would show the last three published pages.
 
 
 == Frequently Asked Questions ==
 
 = Can I use my own template to display the looped posts? =
 
-Not with out hacking the actual plugin files but I will be adding that function very soon
+As of v0.0.2 yes you can! Simply copy loop-template.php from the plugin folder to the root of your theme folder and edit as needed.
 
 == Screenshots ==
 
@@ -42,6 +42,11 @@ Not with out hacking the actual plugin files but I will be adding that function 
 Initial version
 
 == Changelog ==
+
+= 0.0.2 (2018-10-13) =
+* Added function to override template with the users own template
+* Added GPLv2 licence
+* Fixed some typos
 
 = 0.0.1 (2018-10-07) =
 * Initial version on WP repository
