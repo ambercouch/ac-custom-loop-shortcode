@@ -39,7 +39,8 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'type' => 'post',
             'show' => 4,
             'template' => 'loop-template.php',
-            'css' => 'true'
+            'css' => 'true',
+            'ignore_sticky_posts' => 1
         ), $atts));
 
         $args = [
@@ -93,7 +94,8 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'post_type' => $type,
             'showposts' => $show,
             'orderby' => 'menu_order',
-            'order' => 'ASC'
+            'order' => 'ASC',
+            'ignore_sticky_posts' => $ignore_sticky_posts
         ));
 
 
