@@ -39,8 +39,18 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'type' => 'post',
             'show' => 4,
             'template' => 'loop-template.php',
-            'css' => 'true'
+            'css' => 'true',
+            'ignore_sticky_posts' => 1,
+            'orderby' => '',
+            'order' => 'DESC'
         ), $atts));
+
+        //default orderby
+        if($type == 'post' && $orderby == ''){
+            $orderby = 'date';
+        }else{
+            $orderby = 'menu_order';
+        }
 
         $args = [
             'public' => true
@@ -92,8 +102,9 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         $wp_query->query(array(
             'post_type' => $type,
             'showposts' => $show,
-            'orderby' => 'menu_order',
-            'order' => 'ASC'
+            'orderby' => $orderby,
+            'order' => $order,
+            'ignore_sticky_posts' => $ignore_sticky_posts
         ));
 
 
