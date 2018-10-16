@@ -4,7 +4,7 @@ Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts,
 Requires at least: 4.6
 Tested up to: 4.9.8
-Stable tag: 0.0.2
+Stable tag: 0.1.1
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -38,15 +38,18 @@ As of v0.0.2 yes you can! Simply copy loop-template.php from the plugin folder t
 
 == Upgrade Notice ==
 
+= 0.1.1 =
+Added user template function
+
 = 0.0.1 =
 Initial version
 
 == Changelog ==
 
-= 0.0.2 (2018-10-13) =
+= 0.1.1 (2018-10-13) =
 * Added function to override template with the users own template
 * Added GPLv2 licence
 * Fixed some typos
 
-= 0.0.1 (2018-10-07) =
+= 0.1.0 (2018-10-07) =
 * Initial version on WP repository
