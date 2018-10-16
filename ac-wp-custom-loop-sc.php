@@ -42,7 +42,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'css' => 'true',
             'ignore_sticky_posts' => 1,
             'orderby' => '',
-            'order' => 'ASC'
+            'order' => 'DESC'
         ), $atts));
 
         //default orderby
@@ -51,7 +51,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         }else{
             $orderby = 'menu_order';
         }
-    
+
         $args = [
             'public' => true
         ];
