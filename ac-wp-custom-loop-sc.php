@@ -46,9 +46,12 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         ), $atts));
 
         //default orderby
-        if($type == 'post' && $orderby == ''){
+        if ($type == 'post' && $orderby == '')
+        {
             $orderby = 'date';
-        }else{
+        }
+        else
+        {
             $orderby = 'menu_order';
         }
 
@@ -57,20 +60,23 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         ];
         $output = '';
         $post_types = get_post_types($args, 'names');
-        $theme_directory = get_stylesheet_directory().'/';
-        $theme_template = $theme_directory.$template;
+        $theme_directory = get_stylesheet_directory() . '/';
+        $theme_template = $theme_directory . $template;
 
-        if($css == 'true'){
+        if ($css == 'true')
+        {
             $handle = 'ac_wp_custom_loop_styles';
             $list = 'enqueued';
 
-            if (! wp_script_is( $handle, $list )) {
-                wp_register_style( 'ac_wp_custom_loop_styles', plugin_dir_url( __FILE__ ) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181007' );
-                wp_enqueue_style( 'ac_wp_custom_loop_styles' );
+            if (!wp_script_is($handle, $list))
+            {
+                wp_register_style('ac_wp_custom_loop_styles', plugin_dir_url(__FILE__) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181016');
+                wp_enqueue_style('ac_wp_custom_loop_styles');
             }
         }
 
-        if( file_exists($theme_template)){
+        if (file_exists($theme_template))
+        {
             $template = $theme_template;
         }
 
@@ -114,8 +120,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
                 the_post();
                 ob_start();
                 ?>
-            <?php require($template) ?>
-                <?php //get_template_part('template-parts/post/content'); ?>
+                <?php require($template) ?>
                 <?php
                 $output .= ob_get_contents();
                 ob_end_clean();
