@@ -12,3 +12,7 @@
     float: none;
     display: block;
 }
+
+.c-accl-post-thumb__excerpt p{
+    font-size: 0.8em !important;
+}

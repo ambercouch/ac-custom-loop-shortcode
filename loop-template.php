@@ -31,5 +31,10 @@ if (! wp_script_is( $handle, $list )) {
              </a>
            </h2>
          </header>
+    <?php if (has_excerpt()) : ?>
+      <div class="c-accl-post-thumb__excerpt"  >
+        <?php the_excerpt() ?>
+      </div>
+    <?php endif; ?>
   </div>
 </article>

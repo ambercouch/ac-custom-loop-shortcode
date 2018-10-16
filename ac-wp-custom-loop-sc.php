@@ -65,7 +65,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             $list = 'enqueued';
 
             if (! wp_script_is( $handle, $list )) {
-                wp_register_style( 'ac_wp_custom_loop_styles', plugin_dir_url( __FILE__ ) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181007' );
+                wp_register_style( 'ac_wp_custom_loop_styles', plugin_dir_url( __FILE__ ) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181016' );
                 wp_enqueue_style( 'ac_wp_custom_loop_styles' );
             }
         }
