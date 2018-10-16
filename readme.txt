@@ -4,7 +4,7 @@ Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts,
 Requires at least: 4.6
 Tested up to: 4.9.8
-Stable tag: 0.1.1
+Stable tag: 1.1.0
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -13,7 +13,7 @@ Shortcode to display posts in content areas.
 
 == Description ==
 
-A simple Wordpress plugin that creates Wordpress shortcode that will loop through posts, pages, or custom post types and display them on your website or blog.
+A simple Wordpress plugin that creates Wordpress shortcode that will loop through posts, pages, or custom post types and display them on your website or blog. A typical use would be to show your latest post on your homepage.
 
 == Installation ==
 
@@ -29,7 +29,7 @@ Use WordPress' Add New Plugin feature, searching "AC custom loop", or download t
 
 = Can I use my own template to display the looped posts? =
 
-As of v0.0.2 yes you can! Simply copy loop-template.php from the plugin folder to the root of your theme folder and edit as needed.
+Yes you can! Simply copy loop-template.php from the plugin folder to the root of your theme folder and edit as needed.
 
 == Screenshots ==
 
@@ -38,6 +38,9 @@ As of v0.0.2 yes you can! Simply copy loop-template.php from the plugin folder t
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+Updates to default template and post order.
+
 = 0.1.1 =
 Added user template function
 
@@ -45,6 +48,10 @@ Added user template function
 Initial version
 
 == Changelog ==
+
+= 1.1.0 (2018-10-16) =
+* Added optional excerpt to the default template.
+* Added default post order (post = date, everything else = menu_order).
 
 = 0.1.1 (2018-10-13) =
 * Added function to override template with the users own template
