@@ -5,6 +5,7 @@
 
 .c-accl-post-list__post-thumb{
     width: 25%;
+    padding: 0 0.25em;
 }
 
 .c-accl-post-thumb__header{
