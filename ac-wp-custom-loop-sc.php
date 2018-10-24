@@ -3,7 +3,7 @@
   Plugin Name: AC Custom Loop Shortcode
   Plugin URI: https://github.com/ambercouch/ac-wp-custom-loop-shortcode
   Description: Shortcode  ( [ac_custom_loop] ) that allows you to easily list post, pages or custom posts with the WordPress content editor or in any widget that supports short code. A typical use would be to show your latest post on your homepage.
-  Version: 1.1.0
+  Version: 1.1.1
   Author: AmberCouch
   Author URI: http://ambercouch.co.uk
   Author Email: richard@ambercouch.co.uk
@@ -50,7 +50,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         {
             $orderby = 'date';
         }
-        else
+        elseif($orderby == '')
         {
             $orderby = 'menu_order';
         }
