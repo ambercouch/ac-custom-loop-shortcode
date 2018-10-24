@@ -3,7 +3,7 @@
   Plugin Name: AC Custom Loop Shortcode
   Plugin URI: https://github.com/ambercouch/ac-wp-custom-loop-shortcode
   Description: Shortcode  ( [ac_custom_loop] ) that allows you to easily list post, pages or custom posts with the WordPress content editor or in any widget that supports short code. A typical use would be to show your latest post on your homepage.
-  Version: 1.1.1
+  Version: 1.2.0
   Author: AmberCouch
   Author URI: http://ambercouch.co.uk
   Author Email: richard@ambercouch.co.uk
@@ -40,6 +40,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'show' => 4,
             'template' => 'loop-template.php',
             'css' => 'true',
+            'wrapper' => 'true',
             'ignore_sticky_posts' => 1,
             'orderby' => '',
             'order' => 'DESC'
@@ -62,6 +63,9 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         $post_types = get_post_types($args, 'names');
         $theme_directory = get_stylesheet_directory() . '/';
         $theme_template = $theme_directory . $template;
+
+        $wrapperOpen = ($wrapper == 'true') ? '<div class="'.$class.'" >' : '';
+        $wrapperClose = ($wrapper == 'true') ? '</div>' : '';
 
         if ($css == 'true')
         {
@@ -115,7 +119,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
 
         if (have_posts()) :
-            $output .= '<div class="c-accl-post-list" >';
+            $output .= $wrapperOpen;
             while (have_posts()):
                 the_post();
                 ob_start();
@@ -125,7 +129,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
                 $output .= ob_get_contents();
                 ob_end_clean();
             endwhile;
-            $output .= '</div>';
+            $output .= $wrapperClose;
         endif;
 
         $wp_query = $temp_q;
