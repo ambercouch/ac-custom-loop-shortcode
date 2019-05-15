@@ -86,6 +86,8 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         if (file_exists($theme_template))
         {
             $template = $theme_template;
+        }else{
+            $template = "loop-template.php";
         }
 
         if (!in_array($type, $post_types))
@@ -130,7 +132,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
                 the_post();
                 ob_start();
                 ?>
-                <?php require($template) ?>
+                <?php include("$template"); ?>
                 <?php
                 $output .= ob_get_contents();
                 ob_end_clean();
