@@ -44,7 +44,10 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'ignore_sticky_posts' => 1,
             'orderby' => '',
             'order' => 'DESC',
-            'class' => 'c-accl-post-list'
+            'class' => 'c-accl-post-list',
+            'tax' => '',
+            'term' => ''
+
         ), $atts));
 
         //default orderby
@@ -115,7 +118,9 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'showposts' => $show,
             'orderby' => $orderby,
             'order' => $order,
-            'ignore_sticky_posts' => $ignore_sticky_posts
+            'ignore_sticky_posts' => $ignore_sticky_posts,
+            'taxonomy' => $tax,
+            'term' => $term
         ));
 
 
