@@ -38,7 +38,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         extract(shortcode_atts(array(
             'type' => 'post',
             'show' => 4,
-            'template' => 'loop-template.php',
+            'template' => 'loop-template',
             'css' => 'true',
             'wrapper' => 'true',
             'ignore_sticky_posts' => 1,
@@ -66,7 +66,8 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         $output = '';
         $post_types = get_post_types($args, 'names');
         $theme_directory = get_stylesheet_directory() . '/';
-        $theme_template = $theme_directory . $template;
+        $theme_template = $theme_directory . $template . '.php';
+        $theme_template_type = $theme_directory . $template . '-' . $type . '.php';
 
         $wrapperOpen = ($wrapper == 'true') ? '<div class="'.$class.'" >' : '';
         $wrapperClose = ($wrapper == 'true') ? '</div>' : '';
@@ -86,8 +87,14 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         if (file_exists($theme_template))
         {
             $template = $theme_template;
+
+        }elseif (file_exists( $theme_template_type ))
+        {
+            $template = $theme_template_type;
+
         }else{
             $template = "loop-template.php";
+
         }
 
         if (!in_array($type, $post_types))
