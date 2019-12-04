@@ -48,6 +48,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'class' => 'c-accl-post-list',
             'tax' => '',
             'term' => '',
+            'timber' => false,
             'ids' => ''
 
         ), $atts));
@@ -146,16 +147,32 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
         if (have_posts()) :
             $output .= $wrapperOpen;
-            while (have_posts()):
-                the_post();
+            if($timber === false){
+
+                while (have_posts()):
+                    the_post();
+                    ob_start();
+                    ?>
+                    <?php include("$template"); ?>
+                    <?php
+                    $output .= ob_get_contents();
+                    ob_end_clean();
+                endwhile;
+
+            }else{
+                $context = Timber::get_context();
+                $context['posts'] = Timber::get_posts();
+                $templates = array('loop-template.twig');
                 ob_start();
-                ?>
-                <?php include("$template"); ?>
-                <?php
+                Timber::render( $templates, $context );
                 $output .= ob_get_contents();
                 ob_end_clean();
-            endwhile;
+            }
             $output .= $wrapperClose;
+        endif;
+
+        if (have_posts()) :
+
         endif;
 
         $wp_query = $temp_q;
