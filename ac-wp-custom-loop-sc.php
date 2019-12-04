@@ -38,6 +38,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         extract(shortcode_atts(array(
             'type' => 'post',
             'show' => 4,
+            'template_path' => get_stylesheet_directory() . '/',
             'template' => 'loop-template',
             'css' => 'true',
             'wrapper' => 'true',
@@ -46,9 +47,12 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'order' => 'DESC',
             'class' => 'c-accl-post-list',
             'tax' => '',
-            'term' => ''
+            'term' => '',
+            'ids' => ''
 
         ), $atts));
+
+
 
         //default orderby
         if ($type == 'post' && $orderby == '')
@@ -60,12 +64,18 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             $orderby = 'menu_order';
         }
 
+        if($ids != ''){
+            $ids = explode(',', $ids);
+            $type = 'any';
+            $orderby = 'post__in';
+        }
+
         $args = [
             'public' => true
         ];
         $output = '';
         $post_types = get_post_types($args, 'names');
-        $theme_directory = get_stylesheet_directory() . '/';
+        $theme_directory = $template_path;
         $theme_template = $theme_directory . $template . '.php';
         $theme_template_type = $theme_directory . $template . '-' . $type . '.php';
 
@@ -97,7 +107,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
         }
 
-        if (!in_array($type, $post_types))
+        if (!in_array($type, $post_types) && $type != 'any')
         {
             $output .= '<p>';
             $output .= '<strong>' . $type . '</strong> ';
@@ -129,7 +139,8 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'order' => $order,
             'ignore_sticky_posts' => $ignore_sticky_posts,
             'taxonomy' => $tax,
-            'term' => $term
+            'term' => $term,
+            'post__in' =>  $ids
         ));
 
 
