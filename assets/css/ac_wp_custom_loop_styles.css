@@ -14,6 +14,11 @@
     display: block;
 }
 
+.c-accl-post-thumb__feature-image img{
+    max-width: 100%;
+    height: auto;
+}
+
 .c-accl-post-thumb__excerpt p{
     font-size: 0.8em !important;
 }

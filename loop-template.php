@@ -20,7 +20,7 @@ if (! wp_script_is( $handle, $list )) {
     <?php if ( '' !== get_the_post_thumbnail() ) : ?>
       <div class="post-thumbnail c-accl-post-thumb__feature-image">
         <a href="<?php the_permalink(); ?>" class="c-accl-post-thumb__feature-image-link" >
-            <?php the_post_thumbnail( 'twentyseventeen-featured-image' ); ?>
+            <?php the_post_thumbnail('post-thumbnail'); ?>
         </a>
       </div><!-- .post-thumbnail -->
     <?php endif; ?>
