@@ -12,6 +12,11 @@
     width: 100% !important;
     float: none;
     display: block;
+    padding: 0.25em 0.5em  !important;
+}
+.c-accl-post-thumb__heading{
+   font-size: 1em !important;
+    margin: 1em 0 !important;
 }
 
 .c-accl-post-thumb__feature-image img{
