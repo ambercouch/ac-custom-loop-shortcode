@@ -3,8 +3,8 @@ Contributors: ambercouch
 Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts, timber, twig, custom post type
 Requires at least: 4.6
-Tested up to: 5.3
-Stable tag: 1.4.0
+Tested up to: 5.3.2
+Stable tag: 1.4.3
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -39,6 +39,12 @@ You can also create a template for each post type such as loop-template-post.php
 
 == Upgrade Notice ==
 
+= 1.4.3 =
+Fix release issues.
+
+= 1.4.2 =
+Fix template arguments to allow .php to be optional.
+
 = 1.4.0 =
 Updates to templates plus timber support and show posts using ids.
 
@@ -53,10 +59,19 @@ Initial version
 
 == Changelog ==
 
-= 1.4.0 (2019-12-05 =
-Added ids param to shortcode.
-Added post type templates.
-Added Timber template integration
+= 1.4.3 (2019-12-06) =
+* Fix release issues.
+
+= 1.4.2 (2019-12-24) =
+* Fix shortcode argument issues.
+
+= 1.4.1 (2019-12-06) =
+* Fix release issues.
+
+= 1.4.0 (2019-12-05) =
+* Added ids param to shortcode.
+* Added post type templates.
+* Added Timber template integration
 
 = 1.1.0 (2018-10-16) =
 * Added optional excerpt to the default template.

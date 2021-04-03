@@ -3,7 +3,7 @@
   Plugin Name: AC Custom Loop Shortcode
   Plugin URI: https://github.com/ambercouch/ac-wp-custom-loop-shortcode
   Description: Shortcode  ( [ac_custom_loop] ) that allows you to easily list post, pages or custom posts with the WordPress content editor or in any widget that supports short code. A typical use would be to show your latest post on your homepage.
-  Version: 1.4.0
+  Version: 1.4.3
   Author: AmberCouch
   Author URI: http://ambercouch.co.uk
   Author Email: richard@ambercouch.co.uk
@@ -77,6 +77,8 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         $output = '';
         $post_types = get_post_types($args, 'names');
         $theme_directory = $template_path;
+        //$theme_extention = (substr($template, -4) === '.php' || substr($template, -5) === '.twig' ) ? '' : '.php';
+        $template = (substr($template, -4) === '.php') ? substr_replace($template ,"",-4) :  $template;
         $theme_template = $theme_directory . $template . '.php';
         $theme_template_type = $theme_directory . $template . '-' . $type . '.php';
 
@@ -95,17 +97,17 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             }
         }
 
-        if (file_exists($theme_template))
-        {
-            $template = $theme_template;
 
-        }elseif (file_exists( $theme_template_type ))
+        if (file_exists($theme_template_type))
         {
             $template = $theme_template_type;
 
+        }elseif (file_exists( $theme_template ))
+        {
+            $template = $theme_template;
+
         }else{
             $template = "loop-template.php";
-
         }
 
         if (!in_array($type, $post_types) && $type != 'any')
