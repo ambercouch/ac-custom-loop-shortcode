@@ -3,8 +3,8 @@ Contributors: ambercouch
 Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts, timber, twig, custom post type
 Requires at least: 4.6
-Tested up to: 5.3.2
-Stable tag: 1.4.3
+Tested up to: 5.7
+Stable tag: 1.5
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -39,6 +39,9 @@ You can also create a template for each post type such as loop-template-post.php
 
 == Upgrade Notice ==
 
+= 1.5 =
+Updated Timber support.
+
 = 1.4.3 =
 Fix release issues.
 
@@ -58,6 +61,9 @@ Added user template function
 Initial version
 
 == Changelog ==
+
+= 1.5 (2021-04-04) =
+* Fix release issues.
 
 = 1.4.3 (2019-12-06) =
 * Fix release issues.
