@@ -1,0 +1,11 @@
+{# This is an example of a twig template.
+ it can be copied to your theme template folder if you are using the timber plugin #}
+<div class="l-product-list">
+  <ul class="l-product-list__list">
+    {% for post in posts %}
+      <li class="l-product-list__item">
+        {% include ["inc/tease-product.twig"] %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>

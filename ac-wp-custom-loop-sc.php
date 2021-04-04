@@ -26,6 +26,8 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+use Timber\PostQuery;
+
 defined('ABSPATH') or die('You do not have the required permissions');
 
 if (!function_exists('ac_wp_custom_loop_short_code'))
@@ -53,7 +55,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
         ), $atts));
 
-
+        $template_type = $type;
 
         //default orderby
         if ($type == 'post' && $orderby == '')
@@ -69,6 +71,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             $ids = explode(',', $ids);
             $type = 'any';
             $orderby = 'post__in';
+
         }
 
         $args = [
@@ -76,11 +79,22 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
         ];
         $output = '';
         $post_types = get_post_types($args, 'names');
+
         $theme_directory = $template_path;
-        //$theme_extention = (substr($template, -4) === '.php' || substr($template, -5) === '.twig' ) ? '' : '.php';
-        $template = (substr($template, -4) === '.php') ? substr_replace($template ,"",-4) :  $template;
-        $theme_template = $theme_directory . $template . '.php';
-        $theme_template_type = $theme_directory . $template . '-' . $type . '.php';
+
+
+        if ($timber != false){
+            $twig_template_folder = $theme_directory . 'templates/';
+            $template = (substr($template, -5) === '.twig') ? substr_replace($template ,"",-5) :  $template;
+            $theme_template = $template . '.twig';
+            $theme_template_type = $template . '-' . $template_type . '.twig';
+        }else{
+
+            //$theme_extention = (substr($template, -4) === '.php' || substr($template, -5) === '.twig' ) ? '' : '.php';
+            $template = (substr($template, -4) === '.php') ? substr_replace($template ,"",-4) :  $template;
+            $theme_template = $theme_directory . $template . '.php';
+            $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
+        }
 
         $wrapperOpen = ($wrapper == 'true') ? '<div class="'.$class.'" >' : '';
         $wrapperClose = ($wrapper == 'true') ? '</div>' : '';
@@ -97,18 +111,31 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             }
         }
 
+if($timber != false){
 
-        if (file_exists($theme_template_type))
-        {
-            $template = $theme_template_type;
+    if (file_exists($twig_template_folder.$theme_template_type))
+    {
+        $template = $theme_template_type;
 
-        }elseif (file_exists( $theme_template ))
-        {
-            $template = $theme_template;
+    }elseif (file_exists($twig_template_folder.$theme_template ))
+    {
+        $template = $theme_template;
+    }else{
+        $template = "loop-template.twig";
+    }
+}else{
 
-        }else{
-            $template = "loop-template.php";
-        }
+    if (file_exists($theme_template_type))
+    {
+        $template = $theme_template_type;
+
+    }elseif (file_exists( $theme_template ))
+    {
+        $template = $theme_template;
+    }else{
+        $template = "loop-template.php";
+    }
+}
 
         if (!in_array($type, $post_types) && $type != 'any')
         {
@@ -162,13 +189,24 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
                 endwhile;
 
             }else{
-                $context = Timber::get_context();
-                $context['posts'] = Timber::get_posts();
-                $templates = array('loop-template.twig');
-                ob_start();
-                Timber::render( $templates, $context );
-                $output .= ob_get_contents();
-                ob_end_clean();
+                if(class_exists('Timber')){
+
+                    $context = Timber::get_context();
+                    $context['posts'] = new Timber\PostQuery();
+                    $templates = array( $template);
+                    ob_start();
+                    Timber::render( $templates, $context );
+                    $output .= ob_get_contents();
+                    ob_end_clean();
+                }else{
+                    ob_start();
+                    ?>
+                        <?php echo "<p>The Timber plugin is not active.<br> Activate Timber or set <code>timber='false'</code> in the short code</p>" ?>
+                    <?php
+                    $output .= ob_get_contents();
+                    ob_end_clean();
+                }
+
             }
             $output .= $wrapperClose;
         endif;

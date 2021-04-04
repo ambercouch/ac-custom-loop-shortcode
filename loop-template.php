@@ -6,13 +6,7 @@
  * Time: 13:46
  */
 
-$handle = 'ac_wp_custom_loop_styles';
-$list = 'enqueued';
 
-if (! wp_script_is( $handle, $list )) {
-    wp_register_style( 'ac_wp_custom_loop_styles', plugin_dir_url( __FILE__ ) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181007' );
-    wp_enqueue_style( 'ac_wp_custom_loop_styles' );
-}
 ?>
 
 <article id="post-<?php the_ID(); ?>" <?php post_class('c-accl-post-list__post-thumb'); ?>>

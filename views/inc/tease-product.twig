@@ -1,0 +1,23 @@
+<article id="post-{{ post.id }}" {{ fn('post_class', 'c-accl-post-list__post-thumb') }}>
+  <div class="c-accl-post-thumb">
+    {% if post.thumbnail %}
+    <div class="post-thumbnail c-accl-post-thumb__feature-image">
+      <a href="{{ post.link }}" class="c-accl-post-thumb__feature-image-link" >
+        <img src="{{ post.thumbnail.src|resize(post_thumb_size[0], post_thumb_size[1]) }}" />
+      </a>
+    </div><!-- .post-thumbnail -->
+    {% endif %}
+    <header  class="entry-header c-accl-post-thumb__header">
+      <h2 class="entry-title c-accl-post-thumb__heading">
+        <a href="{{ post.link }}" class="c-accl-post-thumb__link" rel="bookmark">
+          <span class="c-accl-post-thumb__link-title">{{ post.title }}</span>
+        </a>
+      </h2>
+    </header>
+    {% if post.excerpt %}
+    <div class="c-accl-post-thumb__excerpt"  >
+      {{ post.excerpt }}
+    </div>
+    {% endif %}
+  </div>
+</article>
