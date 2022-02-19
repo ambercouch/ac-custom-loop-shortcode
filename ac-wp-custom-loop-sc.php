@@ -30,16 +30,34 @@ use Timber\PostQuery;
 
 defined('ABSPATH') or die('You do not have the required permissions');
 
+
+
+add_action( 'wpcf7_enqueue_scripts', 'ac_cls_enqueue', 11 );
+
+function ac_cls_enqueue()
+{
+
+    $handle_js = 'ac-custom-loop-script';
+    $list = 'enqueued';
+    if (!wp_script_is($handle_js, $list))
+    {
+        wp_register_script($handle_js, plugin_dir_url(__FILE__) . 'assets/js/ac-custom-loop-script.js', array('jquery'), '20200706');
+
+    }
+
+
+
+}
+
 if (!function_exists('ac_wp_custom_loop_short_code'))
 {
 
     function ac_wp_custom_loop_short_code($atts)
     {
-
-
         extract(shortcode_atts(array(
             'type' => 'post',
             'show' => 4,
+            'per_page' => false,
             'template_path' => get_stylesheet_directory() . '/',
             'template' => 'loop-template',
             'css' => 'true',
@@ -51,11 +69,16 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'tax' => '',
             'term' => '',
             'timber' => false,
-            'ids' => ''
+            'ids' => '',
+            'collections' => 'false'
 
         ), $atts));
 
+
         $template_type = $type;
+        if ($collections != 'false'){
+            $template_type = 'tax-'.$tax;
+        }
 
         //default orderby
         if ($type == 'post' && $orderby == '')
@@ -110,32 +133,31 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
                 wp_enqueue_style('ac_wp_custom_loop_styles');
             }
         }
+        if($timber != false){
 
-if($timber != false){
+            if (file_exists($twig_template_folder.$theme_template_type))
+            {
+                $template = $theme_template_type;
 
-    if (file_exists($twig_template_folder.$theme_template_type))
-    {
-        $template = $theme_template_type;
+            }elseif (file_exists($twig_template_folder.$theme_template ))
+            {
+                $template = $theme_template;
+            }else{
+                $template = "loop-template.twig";
+            }
+        }else{
 
-    }elseif (file_exists($twig_template_folder.$theme_template ))
-    {
-        $template = $theme_template;
-    }else{
-        $template = "loop-template.twig";
-    }
-}else{
+            if (file_exists($theme_template_type))
+            {
+                $template = $theme_template_type;
 
-    if (file_exists($theme_template_type))
-    {
-        $template = $theme_template_type;
-
-    }elseif (file_exists( $theme_template ))
-    {
-        $template = $theme_template;
-    }else{
-        $template = "loop-template.php";
-    }
-}
+            }elseif (file_exists( $theme_template ))
+            {
+                $template = $theme_template;
+            }else{
+                $template = "loop-template.php";
+            }
+        }
 
         if (!in_array($type, $post_types) && $type != 'any')
         {
@@ -158,64 +180,127 @@ if($timber != false){
             return $output;
         }
 
-        global $wp_query;
-        $temp_q = $wp_query;
-        $wp_query = null;
-        $wp_query = new WP_Query();
-        $wp_query->query(array(
-            'post_type' => $type,
-            'showposts' => $show,
-            'orderby' => $orderby,
-            'order' => $order,
-            'ignore_sticky_posts' => $ignore_sticky_posts,
-            'taxonomy' => $tax,
-            'term' => $term,
-            'post__in' =>  $ids
-        ));
+        if($show == 'default'){
+            $show = false;
+        }
+        if($per_page != false){
+
+        }
+        $per_page = 3;
+
+        if($collections == 'false')
+        {
+            global $paged;
+            if (!isset($paged) || !$paged){
+                $paged = 1;
+            }
+
+            global $wp_query;
+            $temp_q = $wp_query;
+            $wp_query = null;
+            $wp_query = new WP_Query();
+            $wp_query->query(array(
+                'post_type' => $type,
+                'posts_per_page'   => $per_page,
+                'showposts' => $show,
+                'orderby' => $orderby,
+                'order' => $order,
+                'ignore_sticky_posts' => $ignore_sticky_posts,
+                'taxonomy' => $tax,
+                'term' => $term,
+                'post__in' => $ids,
+                'paged' => $paged
+
+            ));
+            $handle_js = 'ac-custom-loop-script';
+            wp_localize_script( $handle_js , 'ac_custom_loop', array(
+                'ajaxurl' => admin_url( 'admin-ajax.php' ), // WordPress AJAX
+                'posts' => json_encode( $wp_query->query_vars ), // everything about your loop is here
+                'current_page' => get_query_var( 'paged' ) ? get_query_var('paged') : 1,
+                'max_page' => $wp_query->max_num_pages
+            ) );
+
+            wp_enqueue_script( $handle_js );
 
 
-        if (have_posts()) :
-            $output .= $wrapperOpen;
-            if($timber === false){
+            if (have_posts()) :
+                $output .= $wrapperOpen;
 
-                while (have_posts()):
-                    the_post();
-                    ob_start();
-                    ?>
-                    <?php include("$template"); ?>
-                    <?php
-                    $output .= ob_get_contents();
-                    ob_end_clean();
-                endwhile;
 
-            }else{
-                if(class_exists('Timber')){
+                if ($timber === false)
+                {
 
-                    $context = Timber::get_context();
-                    $context['posts'] = new Timber\PostQuery();
-                    $templates = array( $template);
-                    ob_start();
-                    Timber::render( $templates, $context );
-                    $output .= ob_get_contents();
-                    ob_end_clean();
-                }else{
-                    ob_start();
-                    ?>
+                    while (have_posts()):
+                        the_post();
+                        ob_start();
+                        ?>
+                        <?php include("$template"); ?>
+                        <?php
+                        $output .= ob_get_contents();
+                        ob_end_clean();
+                    endwhile;
+
+                } else
+                {
+                    if (class_exists('Timber'))
+                    {
+
+                        $context = Timber::get_context();
+                        $context['posts'] = new Timber\PostQuery();
+                        $templates = array($template);
+                        ob_start();
+                        //print_r($templates);
+                        Timber::render($templates, $context);
+                        $output .= ob_get_contents();
+                        ob_end_clean();
+                    } else
+                    {
+                        ob_start();
+                        ?>
                         <?php echo "<p>The Timber plugin is not active.<br> Activate Timber or set <code>timber='false'</code> in the short code</p>" ?>
-                    <?php
-                    $output .= ob_get_contents();
-                    ob_end_clean();
+                        <?php
+                        $output .= ob_get_contents();
+                        ob_end_clean();
+                    }
+
+                }
+                $output .= $wrapperClose;
+            endif;
+
+
+            $wp_query = $temp_q;
+        }else{
+
+            $args = array(
+                'taxonomy'               => $tax,
+                'hide_empty'             => false,
+                'number'                => 4
+            );
+            $term_query = new WP_Term_Query($args);
+
+
+            if ($timber === false)
+            {
+                $output = 'NOT TIMBER';
+            } else
+            {
+
+                $context = Timber::get_context();
+
+                foreach ($term_query->terms as $term ){
+                    $context['terms'][$term->term_id] = new Timber\Term($term->term_id);
                 }
 
+                $templates = array($template);
+                ob_start();
+                //print_r($templates);
+                Timber::render($templates, $context);
+                $output .= ob_get_contents();
+                ob_end_clean();
+
             }
-            $output .= $wrapperClose;
-        endif;
 
-        if (have_posts()) :
-
-        endif;
-
-        $wp_query = $temp_q;
+        }
 
         return $output;
 
