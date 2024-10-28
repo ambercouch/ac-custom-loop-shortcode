@@ -115,19 +115,18 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
         ), $atts));
 
-        $post_types = get_post_types(array( 'public' => true), 'names');
+        $post_types = get_post_types(array('public' => true), 'names');
 
-        if ($timber != false){
-            $twig_template_folder = $theme_directory . 'templates/';
-            $template = (substr($template, -5) === '.twig') ? substr_replace($template ,"",-5) :  $template;
-            $theme_template = $template . '.twig';
-            $theme_template_type = $template . '-' . $template_type . '.twig';
-        }else{
-
-            //$theme_extention = (substr($template, -4) === '.php' || substr($template, -5) === '.twig' ) ? '' : '.php';
-            $template = (substr($template, -4) === '.php') ? substr_replace($template ,"",-4) :  $template;
-            $theme_template = $theme_directory . $template . '.php';
-            $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
+        if (!in_array($type, $post_types) && $type != 'any') {
+            $output = '<p>';
+            $output .= '<strong>' . $type . '</strong> ';
+            $output .= __('is not a public post type on this website. The following post types are available: ', 'ac-wp-custom-loop-shortcode');
+            $output .= '</p><ul>';
+            foreach ($post_types as $cpt) {
+                $output .= '<li>' . $cpt . '</li>';
+            }
+            $output .= '</ul>';
+            return $output;
         }
 
         $output = '';
