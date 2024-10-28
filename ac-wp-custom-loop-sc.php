@@ -30,7 +30,7 @@ use Timber\PostQuery;
 
 defined('ABSPATH') or die('You do not have the required permissions');
 
-function ac_cls_get_template($timber, $template_path, $template_type , $template){
+function accls_get_template($timber, $template_path, $template_type , $template){
     $theme_directory = $template_path;
 
     $twig_template_folder = false;
@@ -74,7 +74,7 @@ function ac_cls_get_template($timber, $template_path, $template_type , $template
     return $template;
 }
 
-function ac_cls_get_orderby($ids, $type){
+function accls_get_orderby($ids, $type){
 
     if($ids){
         $orderby = 'post__in';
@@ -92,6 +92,84 @@ function ac_cls_get_orderby($ids, $type){
 
 }
 
+// Function to validate the post type
+function accls_valid_post_type($type) {
+    $post_types = get_post_types(array('public' => true), 'names');
+    return in_array($type, $post_types) || $type == 'any';
+}
+
+// Function to return an error message for invalid post types
+function accls_invalid_post_type_message($type) {
+    $post_types = get_post_types(array('public' => true), 'names');
+    $output = '<p><strong>' . $type . '</strong> ' . __('is not a public post type on this website.') . '</p>';
+    $output .= '<ul>';
+    foreach ($post_types as $cpt) {
+        $output .= '<li>' . $cpt . '</li>';
+    }
+    $output .= '</ul>';
+    $output .= '<p>';
+    $output .= __('Please edit the short code to use one of the available post types.', 'ac-wp-custom-loop-shortcode');
+    $output .= '</p>';
+    $output .= '<code>[ ac_custom_loop type="post" show="4"]</code>';
+    return $output;
+}
+
+// Function to enqueue CSS
+function accls_enqueue_styles() {
+    $handle = 'ac_wp_custom_loop_styles';
+    if (!wp_script_is($handle, 'enqueued')) {
+        wp_register_style('ac_wp_custom_loop_styles', plugin_dir_url(__FILE__) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181016');
+        wp_enqueue_style('ac_wp_custom_loop_styles');
+    }
+}
+
+// Function to build WP_Query arguments
+function accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $ids) {
+    $args = array(
+        'post_type' => $type,
+        'posts_per_page' => $show,
+        'orderby' => $orderby,
+        'order' => $order,
+        'ignore_sticky_posts' => $ignore_sticky_posts
+    );
+
+    if (!empty($tax) && !empty($term)) {
+        $args['tax_query'] = array(
+            array(
+                'taxonomy' => $tax,
+                'field' => 'slug',
+                'terms' => $term
+            )
+        );
+    }
+
+    if (!empty($ids)) {
+        $args['post__in'] = explode(',', $ids);
+    }
+
+    return $args;
+}
+
+// Function to render PHP template
+function accls_render_php_template($query, $template) {
+    $output = '';
+    while ($query->have_posts()) {
+        $query->the_post();
+        ob_start();
+        include($template);
+        $output .= ob_get_clean();
+    }
+    return $output;
+}
+
+// Function to render Timber template
+function accls_render_timber_template($query, $template) {
+    $context = Timber::get_context();
+    $context['posts'] = new Timber\PostQuery($query);
+    ob_start();
+    Timber::render($template, $context);
+    return ob_get_clean();
+}
 if (!function_exists('ac_wp_custom_loop_short_code'))
 {
 
@@ -115,18 +193,8 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
         ), $atts));
 
-        $post_types = get_post_types(array('public' => true), 'names');
-
-        if (!in_array($type, $post_types) && $type != 'any') {
-            $output = '<p>';
-            $output .= '<strong>' . $type . '</strong> ';
-            $output .= __('is not a public post type on this website. The following post types are available: ', 'ac-wp-custom-loop-shortcode');
-            $output .= '</p><ul>';
-            foreach ($post_types as $cpt) {
-                $output .= '<li>' . $cpt . '</li>';
-            }
-            $output .= '</ul>';
-            return $output;
+        if (!accls_valid_post_type($type)) {
+            return accls_invalid_post_type_message($type);
         }
 
         $output = '';
@@ -138,130 +206,40 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             $type = 'any';
         }
 
-        ac_cls_get_template($timber, $template_path, $template_type , $template);
+        $template = accls_get_template($timber, $template_path, $template_type , $template);
 
-        ac_cls_get_orderby($ids, $type);
-
-        $wrapperOpen = ($wrapper == 'true') ? '<div class="'.$class.'" >' : '';
-        $wrapperClose = ($wrapper == 'true') ? '</div>' : '';
-
-        if ($css == 'true')
-        {
-            $handle = 'ac_wp_custom_loop_styles';
-            $list = 'enqueued';
-
-            if (!wp_script_is($handle, $list))
-            {
-                wp_register_style('ac_wp_custom_loop_styles', plugin_dir_url(__FILE__) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181016');
-                wp_enqueue_style('ac_wp_custom_loop_styles');
-            }
+        // Debug: Check if the template exists
+        if (!file_exists($template)) {
+            return '<p>Template not found: ' . $template . '</p>';
         }
 
-if($timber != false){
+        $orderby = accls_get_orderby($ids, $type);
 
-    if (file_exists($twig_template_folder.$theme_template_type))
-    {
-        $template = $theme_template_type;
-
-    }elseif (file_exists($twig_template_folder.$theme_template ))
-    {
-        $template = $theme_template;
-    }else{
-        $template = "loop-template.twig";
-    }
-}else{
-
-    if (file_exists($theme_template_type))
-    {
-        $template = $theme_template_type;
-
-    }elseif (file_exists( $theme_template ))
-    {
-        $template = $theme_template;
-    }else{
-        $template = "loop-template.php";
-    }
-}
-
-        if (!in_array($type, $post_types) && $type != 'any')
-        {
-            $output .= '<p>';
-            $output .= '<strong>' . $type . '</strong> ';
-            $output .= __('is not a public post type on this website. The following post type are available: -', 'ac-wp-custom-loop-shortcode');
-            $output .= '</p>';
-            $output .= '<ul>';
-
-            foreach ($post_types as $key => $cpt)
-            {
-                $output .= '<li>' . $cpt . '</li>';
-            }
-            $output .= '</ul>';
-            $output .= '<p>';
-            $output .= __('Please edit the short code to use one of the available post types.', 'ac-wp-custom-loop-shortcode');
-            $output .= '</p>';
-            $output .= '<code>[ ac_custom_loop type="post" show="4"]</code>';
-
-            return $output;
+        // Enqueue CSS if needed
+        if ($css == 'true') {
+            accls_enqueue_styles();
         }
 
-        global $wp_query;
-        $temp_q = $wp_query;
-        $wp_query = null;
-        $wp_query = new WP_Query();
-        $wp_query->query(array(
-            'post_type' => $type,
-            'showposts' => $show,
-            'orderby' => $orderby,
-            'order' => $order,
-            'ignore_sticky_posts' => $ignore_sticky_posts,
-            'taxonomy' => $tax,
-            'term' => $term,
-            'post__in' =>  $ids
-        ));
+        // Build WP_Query arguments
+        $query_args = accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $ids);
+
+        // Execute the query
+        $query = new WP_Query($query_args);
 
 
-        if (have_posts()) :
-            $output .= $wrapperOpen;
-            if($timber === false){
+        if ($query->have_posts()) :
+            $output .= ($wrapper == 'true') ? '<div class="'.$class.'" >' : '';
 
-                while (have_posts()):
-                    the_post();
-                    ob_start();
-                    ?>
-                    <?php include("$template"); ?>
-                    <?php
-                    $output .= ob_get_contents();
-                    ob_end_clean();
-                endwhile;
-
-            }else{
-                if(class_exists('Timber')){
-
-                    $context = Timber::get_context();
-                    $context['posts'] = new Timber\PostQuery();
-                    $templates = array( $template);
-                    ob_start();
-                    Timber::render( $templates, $context );
-                    $output .= ob_get_contents();
-                    ob_end_clean();
-                }else{
-                    ob_start();
-                    ?>
-                        <?php echo "<p>The Timber plugin is not active.<br> Activate Timber or set <code>timber='false'</code> in the short code</p>" ?>
-                    <?php
-                    $output .= ob_get_contents();
-                    ob_end_clean();
-                }
-
+            if ($timber && class_exists('Timber')) {
+                // Use Timber for rendering if it's enabled and available
+                $output .= accls_render_timber_template($query, $template);
+            } else {
+                // Use PHP template rendering
+                $output .= accls_render_php_template($query, $template);
             }
-            $output .= $wrapperClose;
+
+            $output .= ($wrapper == 'true') ? '</div>' : '';
         endif;
-
-        if (have_posts()) :
-
-        endif;
-
-        $wp_query = $temp_q;
 
         return $output;
 
