@@ -97,11 +97,9 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
     function ac_wp_custom_loop_short_code($atts)
     {
-
-
         extract(shortcode_atts(array(
             'type' => 'post',
-            'show' => 4,
+            'show' => '-1',
             'template_path' => get_stylesheet_directory() . '/',
             'template' => 'loop-template',
             'css' => 'true',
@@ -117,33 +115,7 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
 
         ), $atts));
 
-        $template_type = $type;
-
-        //default orderby
-        if ($type == 'post' && $orderby == '')
-        {
-            $orderby = 'date';
-        }
-        elseif($orderby == '')
-        {
-            $orderby = 'menu_order';
-        }
-
-        if($ids != ''){
-            $ids = explode(',', $ids);
-            $type = 'any';
-            $orderby = 'post__in';
-
-        }
-
-        $args = [
-            'public' => true
-        ];
-        $output = '';
-        $post_types = get_post_types($args, 'names');
-
-        $theme_directory = $template_path;
-
+        $post_types = get_post_types(array( 'public' => true), 'names');
 
         if ($timber != false){
             $twig_template_folder = $theme_directory . 'templates/';
@@ -157,6 +129,19 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             $theme_template = $theme_directory . $template . '.php';
             $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
         }
+
+        $output = '';
+
+        $template_type = $type;
+
+        if($ids != ''){
+            $ids = explode(',', $ids);
+            $type = 'any';
+        }
+
+        ac_cls_get_template($timber, $template_path, $template_type , $template);
+
+        ac_cls_get_orderby($ids, $type);
 
         $wrapperOpen = ($wrapper == 'true') ? '<div class="'.$class.'" >' : '';
         $wrapperClose = ($wrapper == 'true') ? '</div>' : '';
