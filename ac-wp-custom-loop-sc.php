@@ -30,6 +30,68 @@ use Timber\PostQuery;
 
 defined('ABSPATH') or die('You do not have the required permissions');
 
+function ac_cls_get_template($timber, $template_path, $template_type , $template){
+    $theme_directory = $template_path;
+
+    $twig_template_folder = false;
+    if ($timber != false){
+        $twig_template_folder = $theme_directory . 'templates/';
+        $template = (substr($template, -5) === '.twig') ? substr_replace($template ,"",-5) :  $template;
+        $theme_template = $template . '.twig';
+        $theme_template_type = $template . '-' . $template_type . '.twig';
+    }else{
+
+        //$theme_extention = (substr($template, -4) === '.php' || substr($template, -5) === '.twig' ) ? '' : '.php';
+        $template = (substr($template, -4) === '.php') ? substr_replace($template ,"",-4) :  $template;
+        $theme_template = $theme_directory . $template . '.php';
+        $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
+    }
+    if($timber != false){
+
+        if (file_exists($twig_template_folder.$theme_template_type))
+        {
+            $template = $theme_template_type;
+
+        }elseif (file_exists($twig_template_folder.$theme_template ))
+        {
+            $template = $theme_template;
+        }else{
+            $template = "loop-template.twig";
+        }
+    }else{
+
+        if (file_exists($theme_template_type))
+        {
+            $template = $theme_template_type;
+
+        }elseif (file_exists( $theme_template ))
+        {
+            $template = $theme_template;
+        }else{
+            $template = "loop-template.php";
+        }
+    }
+    return $template;
+}
+
+function ac_cls_get_orderby($ids, $type){
+
+    if($ids){
+        $orderby = 'post__in';
+    }
+    elseif ($type == 'post')
+    {
+        $orderby = 'date';
+    }
+    else
+    {
+        $orderby = 'menu_order';
+    }
+
+    return $orderby;
+
+}
+
 if (!function_exists('ac_wp_custom_loop_short_code'))
 {
 
