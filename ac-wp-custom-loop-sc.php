@@ -170,11 +170,107 @@ function accls_render_timber_template($query, $template) {
     Timber::render($template, $context);
     return ob_get_clean();
 }
-if (!function_exists('ac_wp_custom_loop_short_code'))
-{
 
-    function ac_wp_custom_loop_short_code($atts)
-    {
+// Function to handle queries with subtax and group by subtax terms
+function accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wrapper, $class) {
+    $output = '';
+
+    // Get all terms from the subtax taxonomy
+    $terms = get_terms(array(
+        'taxonomy' => $subtax,
+        'hide_empty' => true
+    ));
+
+    error_log('taxonomy : ' . $subtax);
+    error_log(print_r($terms, true));
+
+    // Check if we have valid terms
+    if (!empty($terms) && !is_wp_error($terms)) {
+        // Grouped posts array
+        $grouped_posts = [];
+
+        // Loop through each subtax term
+        foreach ($terms as $subtax_term) {
+            // Clone original query args and add the subtax term filter
+            $subtax_query_args = $query_args;
+            $subtax_query_args['tax_query'][] = array(
+                'taxonomy' => $subtax,
+                'field' => 'slug',
+                'terms' => $subtax_term->slug
+            );
+
+            error_log('subtax_query_args');
+            error_log(print_r($subtax_query_args, true));
+
+            // Execute the query for this subtax term
+            $query = new WP_Query($subtax_query_args);
+
+
+            error_log('query->posts');
+            error_log(print_r($query->posts, true));
+
+            if ($query->have_posts()) {
+                $grouped_posts[$subtax_term->name] = [];
+                while ($query->have_posts()) {
+                    $query->the_post();
+                    $grouped_posts[$subtax_term->name][] = get_post(get_the_ID());
+                }
+                error_log('grouped_posts');
+                error_log(print_r($grouped_posts, true));
+            }
+            wp_reset_postdata();
+        }
+
+        // Render grouped posts using either Timber or PHP templates
+        if ($wrapper == 'true') {
+            $output .= '<div class="' . esc_attr($class) . '">';
+        }
+
+        if ($timber && class_exists('Timber')) {
+            // Timber rendering
+            $output .= accls_render_grouped_timber_template($grouped_posts, $template);
+        } else {
+            // PHP rendering
+            $output .= accls_render_grouped_php_template($grouped_posts, $template);
+        }
+
+        if ($wrapper == 'true') {
+            $output .= '</div>';
+        }
+    }
+
+    return $output;
+}
+
+// Function to render grouped posts using PHP template
+function accls_render_grouped_php_template($grouped_posts, $template) {
+    $output = '';
+
+    error_log('accls_render_grouped_php_template');
+    error_log(print_r($grouped_posts, true));
+
+            ob_start();
+            include($template);
+            $output .= ob_get_clean();
+
+        wp_reset_postdata();
+
+
+    return $output;
+}
+
+// Function to render grouped posts using Timber template
+function accls_render_grouped_timber_template($grouped_posts, $template) {
+    $context = Timber::get_context();
+    $context['grouped_posts'] = $grouped_posts;
+    ob_start();
+    Timber::render($template, $context);
+    return ob_get_clean();
+}
+
+if (!function_exists('ac_wp_custom_loop_short_code')) {
+
+    function ac_wp_custom_loop_short_code($atts) {
         extract(shortcode_atts(array(
             'type' => 'post',
             'show' => '-1',
@@ -188,63 +284,74 @@ if (!function_exists('ac_wp_custom_loop_short_code'))
             'class' => 'c-accl-post-list',
             'tax' => '',
             'term' => '',
+            'subtax' => '', // New subtax parameter
             'timber' => false,
             'ids' => ''
-
         ), $atts));
 
+        // Validate post type
         if (!accls_valid_post_type($type)) {
             return accls_invalid_post_type_message($type);
         }
 
         $output = '';
-
         $template_type = $type;
 
-        if($ids != ''){
+        // Handle IDs
+        if ($ids != '') {
             $ids = explode(',', $ids);
             $type = 'any';
         }
 
-        $template = accls_get_template($timber, $template_path, $template_type , $template);
+        // Get the template path
+        $template = accls_get_template($timber, $template_path, $template_type, $template);
 
-        // Debug: Check if the template exists
+        // Check if the template exists
         if (!file_exists($template)) {
             return '<p>Template not found: ' . $template . '</p>';
         }
 
+        // Get the correct orderby
         $orderby = accls_get_orderby($ids, $type);
 
-        // Enqueue CSS if needed
+        // Enqueue CSS if required
         if ($css == 'true') {
             accls_enqueue_styles();
         }
 
-        // Build WP_Query arguments
+        // Main Query Arguments
         $query_args = accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $ids);
 
-        // Execute the query
-        $query = new WP_Query($query_args);
+        // If no subtax is provided, use the default query and rendering behavior
+        if (empty($subtax)) {
+            // Execute the query
+            $query = new WP_Query($query_args);
 
+            // Check if there are posts and render accordingly
+            if ($query->have_posts()) {
+                if ($wrapper == 'true') {
+                    $output .= '<div class="' . esc_attr($class) . '">';
+                }
 
-        if ($query->have_posts()) :
-            $output .= ($wrapper == 'true') ? '<div class="'.$class.'" >' : '';
+                // Use Timber or PHP template rendering
+                if ($timber && class_exists('Timber')) {
+                    $output .= accls_render_timber_template($query, $template);
+                } else {
+                    $output .= accls_render_php_template($query, $template);
+                }
 
-            if ($timber && class_exists('Timber')) {
-                // Use Timber for rendering if it's enabled and available
-                $output .= accls_render_timber_template($query, $template);
-            } else {
-                // Use PHP template rendering
-                $output .= accls_render_php_template($query, $template);
+                if ($wrapper == 'true') {
+                    $output .= '</div>';
+                }
             }
 
-            $output .= ($wrapper == 'true') ? '</div>' : '';
-        endif;
+        } else {
+            // If subtax is provided, query the terms and group the results by subtax term
+            $output .= accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wrapper, $class);
+        }
 
         return $output;
-
     }
 
     add_shortcode('ac_custom_loop', 'ac_wp_custom_loop_short_code');
-
 }
