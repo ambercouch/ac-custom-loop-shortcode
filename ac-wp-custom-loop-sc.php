@@ -171,60 +171,102 @@ function accls_render_timber_template($query, $template) {
     return ob_get_clean();
 }
 
-// Function to handle queries with subtax and group by subtax terms
-function accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wrapper, $class) {
+
+// Function to handle queries with one or more subtax terms and group by term combinations
+function accls_handle_subtax_query($query_args, $subtaxes, $timber, $template, $wrapper, $class) {
     $output = '';
+    $subtaxonomies = explode(',', $subtaxes); // Split subtaxonomies by comma
+    $grouped_posts = []; // Initialize grouped posts array
 
-    // Get all terms from the subtax taxonomy
-    $terms = get_terms(array(
-        'taxonomy' => $subtax,
-        'hide_empty' => true
-    ));
+    // Get terms for each subtaxonomy
+    $terms_by_taxonomy = [];
+    foreach ($subtaxonomies as $subtax) {
+        $terms = get_terms(array(
+            'taxonomy' => $subtax,
+            'hide_empty' => true
+        ));
+        if (!empty($terms) && !is_wp_error($terms)) {
+            $terms_by_taxonomy[$subtax] = $terms;
+        }
+    }
 
-    // Check if we have valid terms
-    if (!empty($terms) && !is_wp_error($terms)) {
-        // Grouped posts array
-        $grouped_posts = [];
-
-        // Loop through each subtax term
-        foreach ($terms as $subtax_term) {
-            // Clone original query args and add the subtax term filter
+    // Handle single subtax case
+    if (count($subtaxonomies) == 1) {
+        foreach ($terms_by_taxonomy[$subtaxonomies[0]] as $term) {
             $subtax_query_args = $query_args;
             $subtax_query_args['tax_query'][] = array(
-                'taxonomy' => $subtax,
+                'taxonomy' => $subtaxonomies[0],
                 'field' => 'slug',
-                'terms' => $subtax_term->slug
+                'terms' => $term->slug
             );
 
-            // Execute the query for this subtax term
             $query = new WP_Query($subtax_query_args);
 
             if ($query->have_posts()) {
-                $grouped_posts[$subtax_term->name] = [];
+                $grouped_posts[$term->name] = [];
                 while ($query->have_posts()) {
                     $query->the_post();
-                    $grouped_posts[$subtax_term->name][] = get_post(get_the_ID());
+                    $grouped_posts[$term->name][] = get_post(get_the_ID());
                 }
             }
             wp_reset_postdata();
         }
 
-        // Render grouped posts using either Timber or PHP templates
-        if ($wrapper == 'true') {
-            $output .= '<div class="' . esc_attr($class) . '">';
-        }
+    } else {
+        // Multiple subtaxonomies case with nested grouping
+        foreach ($terms_by_taxonomy[$subtaxonomies[0]] as $term_1) {
+            foreach ($terms_by_taxonomy[$subtaxonomies[1]] as $term_2) {
+                $subtax_query_args = $query_args;
+                $subtax_query_args['tax_query'] = array('relation' => 'AND',
+                                                        array(
+                                                            'taxonomy' => $subtaxonomies[0],
+                                                            'field' => 'slug',
+                                                            'terms' => $term_1->slug
+                                                        ),
+                                                        array(
+                                                            'taxonomy' => $subtaxonomies[1],
+                                                            'field' => 'slug',
+                                                            'terms' => $term_2->slug
+                                                        ),
+                                                        array(
+                                                            'taxonomy' => $query_args['tax_query'][0]['taxonomy'],
+                                                            'field' => 'slug',
+                                                            'terms' => $query_args['tax_query'][0]['terms']
+                                                        )
+                );
 
-        if ($timber && class_exists('Timber')) {
-            // Timber rendering
-            $output .= accls_render_grouped_timber_template($grouped_posts, $template);
-        } else {
-            // PHP rendering
-            $output .= accls_render_grouped_php_template($grouped_posts, $template);
-        }
+                $query = new WP_Query($subtax_query_args);
 
-        if ($wrapper == 'true') {
-            $output .= '</div>';
+                if ($query->have_posts()) {
+                    // Nest posts under [fooTerm][barTerm] structure
+                    if (!isset($grouped_posts[$term_1->name])) {
+                        $grouped_posts[$term_1->name] = [];
+                    }
+                    $grouped_posts[$term_1->name][$term_2->name] = [];
+
+                    while ($query->have_posts()) {
+                        $query->the_post();
+                        $grouped_posts[$term_1->name][$term_2->name][] = get_post(get_the_ID());
+                    }
+                }
+                wp_reset_postdata();
+            }
         }
+    }
+
+    // Render grouped posts using either Timber or PHP templates
+    if ($wrapper == 'true') {
+        $output .= '<div class="' . esc_attr($class) . '">';
+    }
+
+    if ($timber && class_exists('Timber')) {
+        $output .= accls_render_grouped_timber_template($grouped_posts, $template);
+    } else {
+        $output .= accls_render_grouped_php_template($grouped_posts, $template);
+    }
+
+    if ($wrapper == 'true') {
+        $output .= '</div>';
     }
 
     return $output;
@@ -232,6 +274,10 @@ function accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wr
 
 // Function to render grouped posts using PHP template
 function accls_render_grouped_php_template($grouped_posts, $template) {
+
+    error_log(print_r('accls_render_grouped_php_template', true));
+    error_log(print_r('grouped_post', true));
+    error_log(print_r($grouped_posts, true));
     $output = '';
     ob_start();
     include($template);
