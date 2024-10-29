@@ -181,9 +181,6 @@ function accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wr
         'hide_empty' => true
     ));
 
-    error_log('taxonomy : ' . $subtax);
-    error_log(print_r($terms, true));
-
     // Check if we have valid terms
     if (!empty($terms) && !is_wp_error($terms)) {
         // Grouped posts array
@@ -199,15 +196,8 @@ function accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wr
                 'terms' => $subtax_term->slug
             );
 
-            error_log('subtax_query_args');
-            error_log(print_r($subtax_query_args, true));
-
             // Execute the query for this subtax term
             $query = new WP_Query($subtax_query_args);
-
-
-            error_log('query->posts');
-            error_log(print_r($query->posts, true));
 
             if ($query->have_posts()) {
                 $grouped_posts[$subtax_term->name] = [];
@@ -215,8 +205,6 @@ function accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wr
                     $query->the_post();
                     $grouped_posts[$subtax_term->name][] = get_post(get_the_ID());
                 }
-                error_log('grouped_posts');
-                error_log(print_r($grouped_posts, true));
             }
             wp_reset_postdata();
         }
@@ -245,17 +233,10 @@ function accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wr
 // Function to render grouped posts using PHP template
 function accls_render_grouped_php_template($grouped_posts, $template) {
     $output = '';
-
-    error_log('accls_render_grouped_php_template');
-    error_log(print_r($grouped_posts, true));
-
-            ob_start();
-            include($template);
-            $output .= ob_get_clean();
-
-        wp_reset_postdata();
-
-
+    ob_start();
+    include($template);
+    $output .= ob_get_clean();
+    wp_reset_postdata();
     return $output;
 }
 
