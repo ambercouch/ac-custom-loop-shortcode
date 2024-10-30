@@ -123,8 +123,8 @@ function accls_enqueue_styles() {
     }
 }
 
-// Function to build WP_Query arguments
-function accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $ids) {
+// Function to build WP_Query arguments with support for multiple terms and exclusion terms
+function accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids) {
     $args = array(
         'post_type' => $type,
         'posts_per_page' => $show,
@@ -133,16 +133,32 @@ function accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_p
         'ignore_sticky_posts' => $ignore_sticky_posts
     );
 
+    // Initialize the tax_query array
+    $args['tax_query'] = array('relation' => 'AND');
+
+    // Add included terms if `tax` and `term` are provided
     if (!empty($tax) && !empty($term)) {
-        $args['tax_query'] = array(
-            array(
-                'taxonomy' => $tax,
-                'field' => 'slug',
-                'terms' => $term
-            )
+        $terms = explode(',', $term); // Split terms by comma
+        $args['tax_query'][] = array(
+            'taxonomy' => $tax,
+            'field' => 'slug',
+            'terms' => $terms,
+            'operator' => 'AND' // Ensures posts match all terms in the array
         );
     }
 
+    // Add excluded terms if `exclude` is provided
+    if (!empty($tax) && !empty($exclude)) {
+        $exclude_terms = explode(',', $exclude); // Split exclude terms by comma
+        $args['tax_query'][] = array(
+            'taxonomy' => $tax,
+            'field' => 'slug',
+            'terms' => $exclude_terms,
+            'operator' => 'NOT IN' // Excludes posts with any of these terms
+        );
+    }
+
+    // Include specific post IDs if provided
     if (!empty($ids)) {
         $args['post__in'] = explode(',', $ids);
     }
@@ -313,6 +329,7 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
             'term' => '',
             'subtax' => '', // New subtax parameter
             'timber' => false,
+            'exclude' => '',
             'ids' => ''
         ), $atts));
 
