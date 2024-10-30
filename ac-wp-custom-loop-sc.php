@@ -333,6 +333,7 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
             'ids' => ''
         ), $atts));
 
+        error_log("ac_wp_custom_loop_short_code");
         // Validate post type
         if (!accls_valid_post_type($type)) {
             return accls_invalid_post_type_message($type);
