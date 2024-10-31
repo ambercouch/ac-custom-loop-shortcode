@@ -175,6 +175,7 @@ function accls_render_php_template($query, $template) {
         include($template);
         $output .= ob_get_clean();
     }
+    wp_reset_postdata();
     return $output;
 }
 
