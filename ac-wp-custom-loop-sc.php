@@ -365,7 +365,7 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
         }
 
         // Main Query Arguments
-        $query_args = accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $ids);
+        $query_args = accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids);
 
         // If no subtax is provided, use the default query and rendering behavior
         if (empty($subtax)) {
