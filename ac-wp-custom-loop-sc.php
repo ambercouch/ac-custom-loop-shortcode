@@ -26,8 +26,6 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-use Timber\PostQuery;
-
 defined('ABSPATH') or die('You do not have the required permissions');
 
 function accls_get_template($timber, $template_path, $template_type , $template){
