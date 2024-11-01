@@ -14,7 +14,7 @@
 
 defined('ABSPATH') or die('You do not have the required permissions');
 
-function accls_get_template($timber, $template_path, $template_type , $template){
+function acclsc_get_template($timber, $template_path, $template_type , $template){
     $theme_directory = $template_path;
 
     $twig_template_folder = false;
@@ -58,7 +58,7 @@ function accls_get_template($timber, $template_path, $template_type , $template)
     return $template;
 }
 
-function accls_get_orderby($ids, $type){
+function acclsc_get_orderby($ids, $type){
 
     if($ids){
         $orderby = 'post__in';
@@ -77,13 +77,13 @@ function accls_get_orderby($ids, $type){
 }
 
 // Function to validate the post type
-function accls_valid_post_type($type) {
+function acclsc_valid_post_type($type) {
     $post_types = get_post_types(array('public' => true), 'names');
     return in_array($type, $post_types) || $type == 'any';
 }
 
 // Function to return an error message for invalid post types
-function accls_invalid_post_type_message($type) {
+function acclsc_invalid_post_type_message($type) {
     $post_types = get_post_types(array('public' => true), 'names');
     $output = '<p><strong>' . $type . '</strong> ' . __('is not a public post type on this website.') . '</p>';
     $output .= '<ul>';
@@ -99,7 +99,7 @@ function accls_invalid_post_type_message($type) {
 }
 
 // Function to enqueue CSS
-function accls_enqueue_styles() {
+function acclsc_enqueue_styles() {
     $handle = 'ac_wp_custom_loop_styles';
     if (!wp_script_is($handle, 'enqueued')) {
         wp_register_style('ac_wp_custom_loop_styles', plugin_dir_url(__FILE__) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181016');
@@ -108,7 +108,7 @@ function accls_enqueue_styles() {
 }
 
 // Function to build WP_Query arguments with support for multiple terms and exclusion terms
-function accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids) {
+function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids) {
     $args = array(
         'post_type' => $type,
         'posts_per_page' => $show,
@@ -151,7 +151,7 @@ function accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_p
 }
 
 // Function to render PHP template
-function accls_render_php_template($query, $template) {
+function acclsc_render_php_template($query, $template) {
     $output = '';
     while ($query->have_posts()) {
         $query->the_post();
@@ -164,7 +164,7 @@ function accls_render_php_template($query, $template) {
 }
 
 // Function to render Timber template
-function accls_render_timber_template($query, $template) {
+function acclsc_render_timber_template($query, $template) {
     $context = Timber::get_context();
     $context['posts'] = new Timber\PostQuery($query);
     ob_start();
@@ -174,7 +174,7 @@ function accls_render_timber_template($query, $template) {
 
 
 // Function to handle queries with one or more subtax terms and group by term combinations
-function accls_handle_subtax_query($query_args, $subtaxes, $timber, $template, $wrapper, $class) {
+function acclsc_handle_subtax_query($query_args, $subtaxes, $timber, $template, $wrapper, $class) {
     $output = '';
     $subtaxonomies = explode(',', $subtaxes); // Split subtaxonomies by comma
     $grouped_posts = []; // Initialize grouped posts array
@@ -261,9 +261,9 @@ function accls_handle_subtax_query($query_args, $subtaxes, $timber, $template, $
     }
 
     if ($timber && class_exists('Timber')) {
-        $output .= accls_render_grouped_timber_template($grouped_posts, $template);
+        $output .= acclsc_render_grouped_timber_template($grouped_posts, $template);
     } else {
-        $output .= accls_render_grouped_php_template($grouped_posts, $template);
+        $output .= acclsc_render_grouped_php_template($grouped_posts, $template);
     }
 
     if ($wrapper == 'true') {
@@ -274,9 +274,9 @@ function accls_handle_subtax_query($query_args, $subtaxes, $timber, $template, $
 }
 
 // Function to render grouped posts using PHP template
-function accls_render_grouped_php_template($grouped_posts, $template) {
+function acclsc_render_grouped_php_template($grouped_posts, $template) {
 
-    error_log(print_r('accls_render_grouped_php_template', true));
+    error_log(print_r('acclsc_render_grouped_php_template', true));
     error_log(print_r('grouped_post', true));
     error_log(print_r($grouped_posts, true));
     $output = '';
@@ -288,7 +288,7 @@ function accls_render_grouped_php_template($grouped_posts, $template) {
 }
 
 // Function to render grouped posts using Timber template
-function accls_render_grouped_timber_template($grouped_posts, $template) {
+function acclsc_render_grouped_timber_template($grouped_posts, $template) {
     $context = Timber::get_context();
     $context['grouped_posts'] = $grouped_posts;
     ob_start();
@@ -296,9 +296,9 @@ function accls_render_grouped_timber_template($grouped_posts, $template) {
     return ob_get_clean();
 }
 
-if (!function_exists('ac_wp_custom_loop_short_code')) {
+if (!function_exists('acclsc_sc')) {
 
-    function ac_wp_custom_loop_short_code($atts) {
+    function acclsc_sc($atts) {
         extract(shortcode_atts(array(
             'type' => 'post',
             'show' => '-1',
@@ -318,10 +318,9 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
             'ids' => ''
         ), $atts));
 
-        error_log("ac_wp_custom_loop_short_code");
         // Validate post type
-        if (!accls_valid_post_type($type)) {
-            return accls_invalid_post_type_message($type);
+        if (!acclsc_valid_post_type($type)) {
+            return acclsc_invalid_post_type_message($type);
         }
 
         $output = '';
@@ -334,7 +333,7 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
         }
 
         // Get the template path
-        $template = accls_get_template($timber, $template_path, $template_type, $template);
+        $template = acclsc_get_template($timber, $template_path, $template_type, $template);
 
         // Check if the template exists
         if (!file_exists($template)) {
@@ -342,15 +341,15 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
         }
 
         // Get the correct orderby
-        $orderby = accls_get_orderby($ids, $type);
+        $orderby = acclsc_get_orderby($ids, $type);
 
         // Enqueue CSS if required
         if ($css == 'true') {
-            accls_enqueue_styles();
+            acclsc_enqueue_styles();
         }
 
         // Main Query Arguments
-        $query_args = accls_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids);
+        $query_args = acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids);
 
         // If no subtax is provided, use the default query and rendering behavior
         if (empty($subtax)) {
@@ -365,9 +364,9 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
 
                 // Use Timber or PHP template rendering
                 if ($timber && class_exists('Timber')) {
-                    $output .= accls_render_timber_template($query, $template);
+                    $output .= acclsc_render_timber_template($query, $template);
                 } else {
-                    $output .= accls_render_php_template($query, $template);
+                    $output .= acclsc_render_php_template($query, $template);
                 }
 
                 if ($wrapper == 'true') {
@@ -377,11 +376,11 @@ if (!function_exists('ac_wp_custom_loop_short_code')) {
 
         } else {
             // If subtax is provided, query the terms and group the results by subtax term
-            $output .= accls_handle_subtax_query($query_args, $subtax, $timber, $template, $wrapper, $class);
+            $output .= acclsc_handle_subtax_query($query_args, $subtax, $timber, $template, $wrapper, $class);
         }
 
         return $output;
     }
 
-    add_shortcode('ac_custom_loop', 'ac_wp_custom_loop_short_code');
+    add_shortcode('ac_custom_loop', 'acclsc_sc');
 }
