@@ -2,91 +2,106 @@
 Contributors: ambercouch
 Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts, timber, twig, custom post type
-Requires at least: 4.6
-Tested up to: 5.7
-Stable tag: 1.5
+Requires at least: 5.2
+Tested up to: 6.6
+Stable tag: 1.5.2
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Shortcode to display posts in content areas.
+A simple WordPress plugin that creates a shortcode to loop through posts, pages, or custom post types and display them anywhere on your site.
 
 == Description ==
 
-A simple Wordpress plugin that creates Wordpress shortcode that will loop through posts, pages, or custom post types and display them on your website or blog. A typical use would be to show your latest post on your homepage.
+Easily display posts, pages, or custom post types in content areas using a customizable shortcode. Display your latest posts, group by taxonomies, or use custom templates with Timber for Twig support.
 
 == Installation ==
 
-Use WordPress' Add New Plugin feature, searching "AC custom loop", or download the archive and:
+1. Install via WordPress Add New Plugin feature by searching "AC Custom Loop," or upload the plugin files to `/wp-content/plugins/ac-wp-custom-loop`.
+2. Activate the plugin via the ‘Plugins’ screen in WordPress.
+3. Use `[ac_custom_loop]` shortcode in any page, post, or widget supporting shortcodes.
+4. The default setup displays your latest 4 posts. Customize with attributes like `type` and `show`, e.g., `[ac_custom_loop type="page" show="3"]` to display the latest three pages.
 
-1. Upload the plugin files to the `/wp-content/plugins/ac-wp-custom-loop` directory, or install the plugin through the WordPress plugins screen directly.
-2. Activate the plugin through the 'Plugins' screen in WordPress
-3. Add the shortcode [ac_custom_loop] to the content area of any page, post or custom post type or to any widget that supports shortcode.
-4. By default the shortcode will display your latest 4 post, you can use the 'type' and 'show' arguments to customise the type of post that are shown and how many eg. [ac_custom_loop type="page" show="3"] would show the last three published pages.
+== Shortcode Options and Examples ==
 
+**Display a specific post type:**
+`[ac_custom_loop type="foo"]`
+This displays posts from the `foo` custom post type.
+
+**Display posts with specific tags:**
+`[ac_custom_loop type="post" tax="tag" term="foo"]`
+This displays posts tagged with `foo`.
+
+**Group posts by taxonomy (e.g., categories and tags):**
+`[ac_custom_loop type="post" subtax="category,tag"]`
+Groups posts by categories, then by tags within each category.
+
+**Exclude posts by specific tags:**
+`[ac_custom_loop type="post" tax="tag" term="foo,bar" exclude="baz"]`
+This displays posts tagged with `foo` and `bar`, but excludes those tagged with `baz`.
+
+**Use a custom template for loop display:**
+To use a custom template, copy `loop-template.php` from the plugin folder to the root of your theme folder and modify as desired. You can also create templates for specific post types (e.g., `loop-template-post.php`).
 
 == Frequently Asked Questions ==
 
-= Can I use my own template to display the looped posts? =
+= How do I show posts from a specific post type? =
+Use `[ac_custom_loop type="your_post_type"]` to show posts from a specific custom post type.
 
-Yes you can! Simply copy loop-template.php from the plugin folder to the root of your theme folder and edit as needed.
-You can also create a template for each post type such as loop-template-post.php or loop-template-page.php or loop-template-my-custom-post.php
+= Can I display posts with a specific taxonomy term? =
+Yes! Use `[ac_custom_loop type="post" tax="tag" term="your_term"]` to filter posts by taxonomy term.
+
+= How can I group posts by taxonomies? =
+Use `[ac_custom_loop subtax="category,tag"]` to group posts by taxonomies.
+
+= Can I exclude specific terms? =
+Yes, add `exclude="term"` to exclude posts tagged with that term.
+
+= Can I use custom templates? =
+Absolutely! Copy `loop-template.php` to your theme directory or create post-type-specific templates, such as `loop-template-post.php`.
 
 == Screenshots ==
 
-1. Add the code to any content area that accepts shortcode.
-2. Posts, Pages or Custom post types are shown on the front end of your website.
+1. Adding the shortcode to any content area that supports shortcodes.
+2. Posts, pages, or custom post types appear styled in your chosen layout on the front end.
 
 == Upgrade Notice ==
 
+= 1.5.2 =
+Fix template issue.
+
+= 1.5.1 =
+Added support for grouping posts by multiple taxonomies and refactored core code for flexibility and clarity.
+
 = 1.5 =
-Updated Timber support.
+Improved Timber support.
 
 = 1.4.3 =
-Fix release issues.
-
-= 1.4.2 =
-Fix template arguments to allow .php to be optional.
-
-= 1.4.0 =
-Updates to templates plus timber support and show posts using ids.
-
-= 1.1.0 =
-Updates to default template and post order.
-
-= 0.1.1 =
-Added user template function
-
-= 0.0.1 =
-Initial version
+Fixed release issues.
 
 == Changelog ==
 
+= 1.5.2 =
+* Fix template issue.
+
+= 1.5.1 (2024-11-01) =
+* Added support for grouping posts by multiple taxonomies.
+* Refactored core code for improved maintainability.
+
 = 1.5 (2021-04-04) =
-* Fix release issues.
+* Enhanced Timber compatibility.
 
 = 1.4.3 (2019-12-06) =
-* Fix release issues.
+* Resolved release issues.
 
 = 1.4.2 (2019-12-24) =
-* Fix shortcode argument issues.
-
-= 1.4.1 (2019-12-06) =
-* Fix release issues.
+* Fixed shortcode argument issues.
 
 = 1.4.0 (2019-12-05) =
-* Added ids param to shortcode.
-* Added post type templates.
-* Added Timber template integration
+* Added support for specific post type templates and custom Timber integration.
 
 = 1.1.0 (2018-10-16) =
-* Added optional excerpt to the default template.
-* Added default post order (post = date, everything else = menu_order).
-
-= 0.1.1 (2018-10-13) =
-* Added function to override template with the users own template
-* Added GPLv2 licence
-* Fixed some typos
+* Added default post order and optional excerpt in the default template.
 
 = 0.1.0 (2018-10-07) =
-* Initial version on WP repository
+* Initial release.

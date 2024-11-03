@@ -3,7 +3,7 @@
   Plugin Name: AC Custom Loop Shortcode
   Plugin URI: https://ambercouch.co.uk
   Description: Shortcode  ( [ac_custom_loop] ) that allows you to easily list post, pages or custom posts with the WordPress content editor or in any widget that supports short code. A typical use would be to show your latest post on your homepage.
-  Version: 1.5
+  Version: 1.5.2
   Author: AmberCouch
   Author URI: http://ambercouch.co.uk
   Author Email: richard@ambercouch.co.uk
@@ -18,32 +18,30 @@ function acclsc_get_template($timber, $template_path, $template_type , $template
     $theme_directory = $template_path;
 
     $twig_template_folder = false;
-    if ($timber != false){
-        $twig_template_folder = $theme_directory . 'templates/';
-        $template = (substr($template, -5) === '.twig') ? substr_replace($template ,"",-5) :  $template;
-        $theme_template = $template . '.twig';
-        $theme_template_type = $template . '-' . $template_type . '.twig';
-    }else{
+    if ($timber !== false) {
+        // Get the Timber template directory, defaulting to 'views' or any custom folder set by the user
+        $timber_template_dir = is_array(Timber::$dirname) ? Timber::$dirname[0] : Timber::$dirname;
+        $twig_template_folder = $theme_directory  . $timber_template_dir . '/';
 
-        //$theme_extention = (substr($template, -4) === '.php' || substr($template, -5) === '.twig' ) ? '' : '.php';
-        $template = (substr($template, -4) === '.php') ? substr_replace($template ,"",-4) :  $template;
-        $theme_template = $theme_directory . $template . '.php';
-        $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
-    }
-    if($timber != false){
-
-        if (file_exists($twig_template_folder.$theme_template_type))
-        {
+        // Construct template paths
+        $template = (substr($template, -5) === '.twig') ? substr_replace($template, "", -5) : $template;
+        $theme_template = $twig_template_folder . $template . '.twig';
+        $theme_template_type = $twig_template_folder . $template . '-' . $template_type . '.twig';
+        if (file_exists($theme_template_type)){
             $template = $theme_template_type;
-
-        }elseif (file_exists($twig_template_folder.$theme_template ))
+        }elseif (file_exists($theme_template ))
         {
             $template = $theme_template;
-        }else{
-            $template = "loop-template.twig";
-        }
-    }else{
 
+        }else{
+            $template = plugin_dir_path(__FILE__)."views/loop-template.twig";
+        }
+
+    } else {
+        // For PHP templates
+        $template = (substr($template, -4) === '.php') ? substr_replace($template, "", -4) : $template;
+        $theme_template = $theme_directory . $template . '.php';
+        $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
         if (file_exists($theme_template_type))
         {
             $template = $theme_template_type;
@@ -52,7 +50,7 @@ function acclsc_get_template($timber, $template_path, $template_type , $template
         {
             $template = $theme_template;
         }else{
-            $template = "loop-template.php";
+            $template = plugin_dir_path(__FILE__)."loop-template.php";
         }
     }
     return $template;
@@ -120,6 +118,7 @@ function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_
     // Initialize the tax_query array
     $args['tax_query'] = array('relation' => 'AND');
 
+
     // Add included terms if `tax` and `term` are provided
     if (!empty($tax) && !empty($term)) {
         $terms = explode(',', $term); // Split terms by comma
@@ -143,8 +142,11 @@ function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_
     }
 
     // Include specific post IDs if provided
+
+
+
     if (!empty($ids)) {
-        $args['post__in'] = explode(',', $ids);
+        $args['post__in'] = $ids;
     }
 
     return $args;
@@ -276,9 +278,6 @@ function acclsc_handle_subtax_query($query_args, $subtaxes, $timber, $template, 
 // Function to render grouped posts using PHP template
 function acclsc_render_grouped_php_template($grouped_posts, $template) {
 
-    error_log(print_r('acclsc_render_grouped_php_template', true));
-    error_log(print_r('grouped_post', true));
-    error_log(print_r($grouped_posts, true));
     $output = '';
     ob_start();
     include($template);
