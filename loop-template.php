@@ -20,7 +20,7 @@
     <?php endif; ?>
          <header  class="entry-header c-accl-post-thumb__header">
            <h2 class="entry-title c-accl-post-thumb__heading">
-             <a href="<?php esc_url( get_permalink() ) ?>" class="c-accl-post-thumb__link" rel="bookmark">
+             <a href="<?php the_permalink();  ?>" class="c-accl-post-thumb__link" rel="bookmark">
                <span class="c-accl-post-thumb__link-title"><?php the_title() ?></span>
              </a>
            </h2>
