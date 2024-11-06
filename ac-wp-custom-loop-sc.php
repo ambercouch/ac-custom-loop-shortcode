@@ -147,9 +147,6 @@ function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_
     }
 
     // Include specific post IDs if provided
-
-
-
     if (!empty($ids)) {
         $args['post__in'] = $ids;
     }
