@@ -42,6 +42,8 @@ function acclsc_get_template($timber, $template_path, $template_type , $template
         $template = (substr($template, -4) === '.php') ? substr_replace($template, "", -4) : $template;
         $theme_template = $theme_directory . $template . '.php';
         $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
+        $plugin_template_type = plugin_dir_path(__FILE__) . $template . '-' . $template_type . '.php';
+
         if (file_exists($theme_template_type))
         {
             $template = $theme_template_type;
@@ -49,6 +51,9 @@ function acclsc_get_template($timber, $template_path, $template_type , $template
         }elseif (file_exists( $theme_template ))
         {
             $template = $theme_template;
+        }elseif (file_exists( $plugin_template_type ))
+        {
+            $template = $plugin_template_type;
         }else{
             $template = plugin_dir_path(__FILE__)."loop-template.php";
         }
@@ -77,7 +82,7 @@ function acclsc_get_orderby($ids, $type){
 // Function to validate the post type
 function acclsc_valid_post_type($type) {
     $post_types = get_post_types(array('public' => true), 'names');
-    return in_array($type, $post_types) || $type == 'any';
+    return in_array($type, $post_types) || $type == 'any' || $type="tax_terms";
 }
 
 // Function to return an error message for invalid post types
@@ -286,6 +291,26 @@ function acclsc_render_grouped_php_template($grouped_posts, $template) {
     return $output;
 }
 
+function acclsc_handle_tax_query($tax, $show, $orderby, $order, $template){
+    $args = array(
+        'taxonomy' => $tax,
+        'number' => intval($show),
+        'orderby' => $orderby ?: 'name',
+        'order' => $order,
+        'hide_empty' => false
+    );
+
+    $terms = get_terms($args);
+
+    if (is_wp_error($terms) || empty($terms)) {
+        return '<p><strong>No terms found in taxonomy:</strong> ' . esc_html($tax) . '</p>';
+    }
+
+    return $terms;
+
+
+}
+
 // Function to render grouped posts using Timber template
 function acclsc_render_grouped_timber_template($grouped_posts, $template) {
     $context = Timber::get_context();
@@ -295,11 +320,29 @@ function acclsc_render_grouped_timber_template($grouped_posts, $template) {
     return ob_get_clean();
 }
 
+function acclsc_render_terms_timber_template( $term, $template){
+    $context = Timber::get_context();
+    $context['terms'][] = $term;
+    ob_start();
+    Timber::render($template, $context);
+    return ob_get_clean();
+}
+
+function acclsc_render_terms_php_template( $term, $template){
+    $output = '';
+    ob_start();
+    include($template);
+    $output .= ob_get_clean();
+    wp_reset_postdata();
+    return $output;
+}
+
 if (!function_exists('acclsc_sc')) {
 
     function acclsc_sc($atts) {
         extract(shortcode_atts(array(
             'type' => 'post',
+            'collections' => false,
             'show' => '-1',
             'template_path' => get_stylesheet_directory() . '/',
             'template' => 'loop-template',
@@ -325,6 +368,15 @@ if (!function_exists('acclsc_sc')) {
         $output = '';
         $template_type = $type;
 
+        if ($collections != false || $type == 'tax_terms' ) {
+            if (empty($tax)) {
+                return '<p><strong>Error:</strong> You must specify a taxonomy using the "tax" attribute when using "type=\'tax_terms\'".</p>';
+            }
+            $template_type = 'tax-'.$tax;
+            //if we want all terms we need to use 0 instead of -1
+            $show = ($show == '-1') ? 0 : $show;
+        }
+
         // Handle IDs
         if ($ids != '') {
             $ids = explode(',', $ids);
@@ -347,11 +399,44 @@ if (!function_exists('acclsc_sc')) {
             acclsc_enqueue_styles();
         }
 
+
+
+
         // Main Query Arguments
         $query_args = acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids);
 
         // If no subtax is provided, use the default query and rendering behavior
-        if (empty($subtax)) {
+        if ($collections != false || $type == 'tax_terms' )
+        {
+            $terms = acclsc_handle_tax_query($tax, $show, $orderby, $order, $template);
+
+            if (!empty($terms))
+            {
+                if ($wrapper == 'true')
+                {
+                    $output .= '<div class="' . esc_attr($class) . '">';
+                }
+
+                if ($timber && class_exists('Timber'))
+                {
+                    foreach ($terms as $term){
+                        $output .= acclsc_render_terms_timber_template($term, $template);
+                    }
+                } else
+                {
+                    foreach ($terms as $term){
+                        $output .= acclsc_render_terms_php_template($term, $template);                    }
+
+                }
+
+                if ($wrapper == 'true')
+                {
+                    $output .= '</div>';
+                }
+            }
+
+
+        } elseif (empty($subtax)) {
             // Execute the query
             $query = new WP_Query($query_args);
 
