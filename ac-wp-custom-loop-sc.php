@@ -111,13 +111,15 @@ function acclsc_enqueue_styles() {
 }
 
 // Function to build WP_Query arguments with support for multiple terms and exclusion terms
-function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids) {
+function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids, $show_pagination) {
+    $paged = ($show_pagination) ? (get_query_var('paged')) ? get_query_var('paged') : 1 : 1;
     $args = array(
         'post_type' => $type,
         'posts_per_page' => $show,
         'orderby' => $orderby,
         'order' => $order,
-        'ignore_sticky_posts' => $ignore_sticky_posts
+        'ignore_sticky_posts' => $ignore_sticky_posts,
+        'paged' => $paged
     );
 
     // Initialize the tax_query array
@@ -354,8 +356,14 @@ if (!function_exists('acclsc_sc')) {
             'subtax' => '', // New subtax parameter
             'timber' => false,
             'exclude' => '',
-            'ids' => ''
+            'ids' => '',
+            'paged' => '',
+            'show_pagination' => false
         ), $atts));
+
+        // Determine if pagination should be shown
+        // If the it is paged show the pagination unless $show_pagination is set to the string false
+        $show_pagination = ($show_pagination === 'false') ? false : $paged;
 
         // Validate post type
         if (!acclsc_valid_post_type($type)) {
@@ -409,7 +417,7 @@ if (!function_exists('acclsc_sc')) {
 
 
         // Main Query Arguments
-        $query_args = acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids);
+        $query_args = acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids, $show_pagination);
 
         // If no subtax is provided, use the default query and rendering behavior
         if ($collections != false || $type == 'tax_terms' )
@@ -458,10 +466,25 @@ if (!function_exists('acclsc_sc')) {
                 } else {
                     $output .= acclsc_render_php_template($query, $template);
                 }
-
                 if ($wrapper == 'true') {
                     $output .= '</div>';
                 }
+
+                if ($show_pagination && $query->max_num_pages > 1) {
+                    $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+                    $output .= '<div class="pagination">';
+                    $output .= paginate_links(array(
+                        'total' => $query->max_num_pages,
+                        'current' => max(1, $paged), // Ensure a valid current page
+                        'format' => '?paged=%#%',
+                        'mid_size' => 1,
+                        'prev_text' => __('« Prev'),
+                        'next_text' => __('Next »')
+                    ));
+                    $output .= '</div>';
+                }
+
+
             }
 
         } else {
