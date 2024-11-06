@@ -365,6 +365,15 @@ if (!function_exists('acclsc_sc')) {
             return acclsc_invalid_post_type_message($type);
         }
 
+        // Check if Timber is requested and available
+        if ($timber !== false) {
+            if (!class_exists('Timber')) {
+                return '<p><strong>Timber plugin is not active.</strong> Please install and activate the Timber plugin to use Twig templates with this shortcode.</p>';
+            } else {
+                $timber = true;
+            }
+        }
+
         $output = '';
         $template_type = $type;
 
