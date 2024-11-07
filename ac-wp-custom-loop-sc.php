@@ -14,6 +14,10 @@
 
 defined('ABSPATH') or die('You do not have the required permissions');
 
+/*
+ * Loop setup function
+ */
+
 function acclsc_get_template($timber, $template_path, $template_type , $template){
     $theme_directory = $template_path;
 
@@ -110,8 +114,13 @@ function acclsc_enqueue_styles() {
     }
 }
 
+/*
+ * Loop query functions
+ */
+
 // Function to build WP_Query arguments with support for multiple terms and exclusion terms
 function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids, $show_pagination) {
+
     $paged = ($show_pagination) ? (get_query_var('paged')) ? get_query_var('paged') : 1 : 1;
     $args = array(
         'post_type' => $type,
@@ -155,29 +164,6 @@ function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_
 
     return $args;
 }
-
-// Function to render PHP template
-function acclsc_render_php_template($query, $template) {
-    $output = '';
-    while ($query->have_posts()) {
-        $query->the_post();
-        ob_start();
-        include($template);
-        $output .= ob_get_clean();
-    }
-    wp_reset_postdata();
-    return $output;
-}
-
-// Function to render Timber template
-function acclsc_render_timber_template($query, $template) {
-    $context = Timber::get_context();
-    $context['posts'] = new Timber\PostQuery($query);
-    ob_start();
-    Timber::render($template, $context);
-    return ob_get_clean();
-}
-
 
 // Function to handle queries with one or more subtax terms and group by term combinations
 function acclsc_handle_subtax_query($query_args, $subtaxes, $timber, $template, $wrapper, $class) {
@@ -261,35 +247,11 @@ function acclsc_handle_subtax_query($query_args, $subtaxes, $timber, $template, 
         }
     }
 
-    // Render grouped posts using either Timber or PHP templates
-    if ($wrapper == 'true') {
-        $output .= '<div class="' . esc_attr($class) . '">';
-    }
+    return $grouped_posts;
 
-    if ($timber && class_exists('Timber')) {
-        $output .= acclsc_render_grouped_timber_template($grouped_posts, $template);
-    } else {
-        $output .= acclsc_render_grouped_php_template($grouped_posts, $template);
-    }
-
-    if ($wrapper == 'true') {
-        $output .= '</div>';
-    }
-
-    return $output;
 }
 
-// Function to render grouped posts using PHP template
-function acclsc_render_grouped_php_template($grouped_posts, $template) {
-
-    $output = '';
-    ob_start();
-    include($template);
-    $output .= ob_get_clean();
-    wp_reset_postdata();
-    return $output;
-}
-
+// Function to handle the taxonomy query
 function acclsc_handle_tax_query($tax, $show, $orderby, $order, $template){
     $args = array(
         'taxonomy' => $tax,
@@ -310,6 +272,43 @@ function acclsc_handle_tax_query($tax, $show, $orderby, $order, $template){
 
 }
 
+/*
+ * Loop template functions
+ */
+
+// Function to render PHP template
+function acclsc_render_php_template($query, $template) {
+    $output = '';
+    while ($query->have_posts()) {
+        $query->the_post();
+        ob_start();
+        include($template);
+        $output .= ob_get_clean();
+    }
+    wp_reset_postdata();
+    return $output;
+}
+
+// Function to render Timber template
+function acclsc_render_timber_template($query, $template) {
+    $context = Timber::get_context();
+    $context['posts'] = new Timber\PostQuery($query);
+    ob_start();
+    Timber::render($template, $context);
+    return ob_get_clean();
+}
+
+// Function to render grouped posts using PHP template
+function acclsc_render_grouped_php_template($grouped_posts, $template) {
+
+    $output = '';
+    ob_start();
+    include($template);
+    $output .= ob_get_clean();
+    wp_reset_postdata();
+    return $output;
+}
+
 // Function to render grouped posts using Timber template
 function acclsc_render_grouped_timber_template($grouped_posts, $template) {
     $context = Timber::get_context();
@@ -319,6 +318,7 @@ function acclsc_render_grouped_timber_template($grouped_posts, $template) {
     return ob_get_clean();
 }
 
+// Function to render the taxonomy terms timber template
 function acclsc_render_terms_timber_template( $term, $template){
     $context = Timber::get_context();
     $context['terms'][] = $term;
@@ -327,6 +327,7 @@ function acclsc_render_terms_timber_template( $term, $template){
     return ob_get_clean();
 }
 
+// Function to render the taxonomy terms php template
 function acclsc_render_terms_php_template( $term, $template){
     $output = '';
     ob_start();
@@ -335,6 +336,11 @@ function acclsc_render_terms_php_template( $term, $template){
     wp_reset_postdata();
     return $output;
 }
+
+
+/*
+ * Custom post loop shortcode function
+ */
 
 if (!function_exists('acclsc_sc')) {
 
@@ -379,19 +385,27 @@ if (!function_exists('acclsc_sc')) {
             }
         }
 
+        // init the output var
         $output = '';
+
+        //set the template type
         $template_type = $type;
 
+        // Determine if we are taxonomy terms instead of posts
         if ($collections != false || $type == 'tax_terms' ) {
             if (empty($tax)) {
                 return '<p><strong>Error:</strong> You must specify a taxonomy using the "tax" attribute when using "type=\'tax_terms\'".</p>';
             }
+
+            //update the template type
             $template_type = 'tax-'.$tax;
+
+            //update the $show var when querying taxonomy terms
             //if we want all terms we need to use 0 instead of -1
             $show = ($show == '-1') ? 0 : $show;
         }
 
-        // Handle IDs
+        // Determine if we are getting specific IDs
         if ($ids != '') {
             $ids = explode(',', $ids);
             $type = 'any';
@@ -413,24 +427,21 @@ if (!function_exists('acclsc_sc')) {
             acclsc_enqueue_styles();
         }
 
-
-
-
         // Main Query Arguments
         $query_args = acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids, $show_pagination);
 
-        // If no subtax is provided, use the default query and rendering behavior
+        if ($wrapper == 'true')
+        {
+            $output .= '<div class="' . esc_attr($class) . '">';
+        }
+
+        // Determine if we are getting taxonomy terms, a simple list of post, or post grouped by taxonomy terms.
         if ($collections != false || $type == 'tax_terms' )
         {
             $terms = acclsc_handle_tax_query($tax, $show, $orderby, $order, $template);
 
             if (!empty($terms))
             {
-                if ($wrapper == 'true')
-                {
-                    $output .= '<div class="' . esc_attr($class) . '">';
-                }
-
                 if ($timber && class_exists('Timber'))
                 {
                     foreach ($terms as $term){
@@ -440,15 +451,8 @@ if (!function_exists('acclsc_sc')) {
                 {
                     foreach ($terms as $term){
                         $output .= acclsc_render_terms_php_template($term, $template);                    }
-
-                }
-
-                if ($wrapper == 'true')
-                {
-                    $output .= '</div>';
                 }
             }
-
 
         } elseif (empty($subtax)) {
             // Execute the query
@@ -456,9 +460,7 @@ if (!function_exists('acclsc_sc')) {
 
             // Check if there are posts and render accordingly
             if ($query->have_posts()) {
-                if ($wrapper == 'true') {
-                    $output .= '<div class="' . esc_attr($class) . '">';
-                }
+
 
                 // Use Timber or PHP template rendering
                 if ($timber && class_exists('Timber')) {
@@ -466,30 +468,38 @@ if (!function_exists('acclsc_sc')) {
                 } else {
                     $output .= acclsc_render_php_template($query, $template);
                 }
-                if ($wrapper == 'true') {
-                    $output .= '</div>';
-                }
-
-                if ($show_pagination && $query->max_num_pages > 1) {
-                    $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
-                    $output .= '<div class="pagination">';
-                    $output .= paginate_links(array(
-                        'total' => $query->max_num_pages,
-                        'current' => max(1, $paged), // Ensure a valid current page
-                        'format' => '?paged=%#%',
-                        'mid_size' => 1,
-                        'prev_text' => __('« Prev'),
-                        'next_text' => __('Next »')
-                    ));
-                    $output .= '</div>';
-                }
-
 
             }
 
         } else {
             // If subtax is provided, query the terms and group the results by subtax term
-            $output .= acclsc_handle_subtax_query($query_args, $subtax, $timber, $template, $wrapper, $class);
+            $grouped_posts = acclsc_handle_subtax_query($query_args, $subtax, $timber, $template, $wrapper, $class);
+
+            if ($timber && class_exists('Timber')) {
+                $output .= acclsc_render_grouped_timber_template($grouped_posts, $template);
+            } else {
+                $output .= acclsc_render_grouped_php_template($grouped_posts, $template);
+            }
+
+        }
+
+        if ($wrapper == 'true')
+        {
+            $output .= '</div>';
+        }
+
+        if ($show_pagination && $query->max_num_pages > 1) {
+            $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+            $output .= '<div class="pagination">';
+            $output .= paginate_links(array(
+                'total' => $query->max_num_pages,
+                'current' => max(1, $paged), // Ensure a valid current page
+                'format' => '?paged=%#%',
+                'mid_size' => 1,
+                'prev_text' => __('« Prev'),
+                'next_text' => __('Next »')
+            ));
+            $output .= '</div>';
         }
 
         return $output;
