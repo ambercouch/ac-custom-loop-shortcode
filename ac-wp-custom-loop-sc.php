@@ -122,8 +122,12 @@ function acclsc_enqueue_styles() {
 function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids, $show_pagination) {
 
     $paged = ($show_pagination) ? (get_query_var('paged')) ? get_query_var('paged') : 1 : 1;
+
+    // Convert `$type` to an array if it contains multiple post types
+    $post_types = explode(',', $type);
+
     $args = array(
-        'post_type' => $type,
+        'post_type' => (count($post_types) > 1) ? $post_types : $post_types[0], // Use array if multiple types
         'posts_per_page' => $show,
         'orderby' => $orderby,
         'order' => $order,
@@ -133,7 +137,6 @@ function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_
 
     // Initialize the tax_query array
     $args['tax_query'] = array('relation' => 'AND');
-
 
     // Add included terms if `tax` and `term` are provided
     if (!empty($tax) && !empty($term)) {
