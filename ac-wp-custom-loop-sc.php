@@ -65,22 +65,19 @@ function acclsc_get_template($timber, $template_path, $template_type , $template
     return $template;
 }
 
-function acclsc_get_orderby($ids, $type){
+function acclsc_get_orderby($ids, $type) {
 
-    if($ids){
+    if ($ids) {
         $orderby = 'post__in';
-    }
-    elseif ($type == 'post')
-    {
+    } elseif ($type == 'post') {
         $orderby = 'date';
-    }
-    else
-    {
-        $orderby = 'menu_order';
+    } elseif (strpos($type, ',') !== false) { // Check for multiple post types (comma-separated)
+        $orderby = 'date';
+    } else {
+        $orderby = 'menu_order'; // Use menu_order for a single custom post type
     }
 
     return $orderby;
-
 }
 
 // Function to validate the post type
@@ -423,7 +420,7 @@ if (!function_exists('acclsc_sc')) {
         }
 
         // Get the correct orderby
-        $orderby = acclsc_get_orderby($ids, $type);
+        $orderby = ($orderby) ? $orderby : acclsc_get_orderby($ids, $type);
 
         // Enqueue CSS if required
         if ($css == 'true') {
