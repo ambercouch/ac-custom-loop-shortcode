@@ -62,12 +62,6 @@ function acclsc_get_template($timber, $template_path, $template_type , $template
         $template = $plugin_directory."loop-template" . $file_ext;
     }
 
-    error_log(' $timber_template_dir : ' . $timber_template_dir );
-    error_log( '$theme_template : ' . $theme_template);
-    error_log( '$theme_template_type : ' . $theme_template_type);
-    error_log( '$plugin_template_type : ' .  $plugin_template_type);
-    error_log( '$template : ' .  $template);
-
     return $template;
 }
 
