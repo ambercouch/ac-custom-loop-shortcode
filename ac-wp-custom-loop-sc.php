@@ -12,6 +12,8 @@
   License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
+use Timber\Term;
+
 defined('ABSPATH') or die('You do not have the required permissions');
 
 /*
@@ -19,49 +21,53 @@ defined('ABSPATH') or die('You do not have the required permissions');
  */
 
 function acclsc_get_template($timber, $template_path, $template_type , $template){
-    $theme_directory = $template_path;
+    $timber_template_dir = is_array(Timber::$dirname) ? Timber::$dirname[0] : Timber::$dirname;
 
-    $twig_template_folder = false;
-    if ($timber !== false) {
-        // Get the Timber template directory, defaulting to 'views' or any custom folder set by the user
-        $timber_template_dir = is_array(Timber::$dirname) ? Timber::$dirname[0] : Timber::$dirname;
-        $twig_template_folder = $theme_directory  . $timber_template_dir . '/';
+    $theme_directory = ($timber !== false) ? $template_path  . $timber_template_dir . '/' : $template_path;
+    $plugin_directory = ($timber !== false) ? plugin_dir_path(__FILE__). $timber_template_dir . '/' : plugin_dir_path(__FILE__);
+    $file_ext = ($timber !== false) ? '.twig' : '.php';
+    $file_ext_len = strlen($file_ext);
 
-        // Construct template paths
-        $template = (substr($template, -5) === '.twig') ? substr_replace($template, "", -5) : $template;
-        $theme_template = $twig_template_folder . $template . '.twig';
-        $theme_template_type = $twig_template_folder . $template . '-' . $template_type . '.twig';
-        if (file_exists($theme_template_type)){
-            $template = $theme_template_type;
-        }elseif (file_exists($theme_template ))
-        {
-            $template = $theme_template;
-
-        }else{
-            $template = plugin_dir_path(__FILE__)."views/loop-template.twig";
-        }
-
-    } else {
-        // For PHP templates
-        $template = (substr($template, -4) === '.php') ? substr_replace($template, "", -4) : $template;
-        $theme_template = $theme_directory . $template . '.php';
-        $theme_template_type = $theme_directory . $template . '-' . $template_type . '.php';
-        $plugin_template_type = plugin_dir_path(__FILE__) . $template . '-' . $template_type . '.php';
-
-        if (file_exists($theme_template_type))
-        {
-            $template = $theme_template_type;
-
-        }elseif (file_exists( $theme_template ))
-        {
-            $template = $theme_template;
-        }elseif (file_exists( $plugin_template_type ))
-        {
-            $template = $plugin_template_type;
-        }else{
-            $template = plugin_dir_path(__FILE__)."loop-template.php";
-        }
+    $template = (substr($template, -$file_ext_len ) === $file_ext ) ? substr_replace($template, "", -$file_ext_len) : $template;
+    $theme_template = $theme_directory  . $template . $file_ext;
+    if (is_array($template_type)){
+        $theme_template_type = $theme_directory  . $template . '-' . $template_type[0]. '-' . $template_type[1] . $file_ext;
+        $plugin_template_type = $plugin_directory . $template . '-' . $template_type[0]. '-' . $template_type[1] . $file_ext;
+        $theme_template_tax = $theme_directory  . $template . '-tax' . $file_ext;
+        $plugin_template_tax = $plugin_directory . $template . '-tax' . $file_ext;
+    }else{
+        $theme_template_type = $theme_directory  . $template . '-' . $template_type . $file_ext;
+        $plugin_template_type = $plugin_directory . $template . '-' . $template_type . $file_ext;
+        $theme_template_tax = '';
+        $plugin_template_tax = '';
     }
+
+
+    if (file_exists($theme_template_type))
+    {
+        $template = $theme_template_type;
+    }elseif (file_exists( $theme_template_tax ))
+    {
+        $template = $theme_template_tax;
+    }elseif (file_exists( $theme_template ))
+    {
+        $template = $theme_template;
+    }elseif (file_exists( $plugin_template_type ))
+    {
+        $template = $plugin_template_type;
+    }elseif (file_exists( $plugin_template_tax ))
+    {
+        $template = $plugin_template_tax;
+    }else{
+        $template = $plugin_directory."loop-template" . $file_ext;
+    }
+
+    error_log(' $timber_template_dir : ' . $timber_template_dir );
+    error_log( '$theme_template : ' . $theme_template);
+    error_log( '$theme_template_type : ' . $theme_template_type);
+    error_log( '$plugin_template_type : ' .  $plugin_template_type);
+    error_log( '$template : ' .  $template);
+
     return $template;
 }
 
@@ -83,7 +89,7 @@ function acclsc_get_orderby($ids, $type) {
 // Function to validate the post type
 function acclsc_valid_post_type($type) {
     $post_types = get_post_types(array('public' => true), 'names');
-    return in_array($type, $post_types) || $type == 'any' || $type="tax_terms";
+    return in_array($type, $post_types) || $type == 'any' || $type="tax_term";
 }
 
 // Function to return an error message for invalid post types
@@ -321,7 +327,7 @@ function acclsc_render_grouped_timber_template($grouped_posts, $template) {
 // Function to render the taxonomy terms timber template
 function acclsc_render_terms_timber_template( $term, $template){
     $context = Timber::get_context();
-    $context['terms'][] = $term;
+    $context['terms'][] = new Term($term->term_id);
     ob_start();
     Timber::render($template, $context);
     return ob_get_clean();
@@ -392,13 +398,13 @@ if (!function_exists('acclsc_sc')) {
         $template_type = $type;
 
         // Determine if we are taxonomy terms instead of posts
-        if ($collections != false || $type == 'tax_terms' ) {
+        if ($collections != false || $type == 'tax_term' ) {
             if (empty($tax)) {
-                return '<p><strong>Error:</strong> You must specify a taxonomy using the "tax" attribute when using "type=\'tax_terms\'".</p>';
+                return '<p><strong>Error:</strong> You must specify a taxonomy using the "tax" attribute when using "type=\'tax_term\'".</p>';
             }
 
             //update the template type
-            $template_type = 'tax-'.$tax;
+            $template_type = ['tax',$tax];
 
             //update the $show var when querying taxonomy terms
             //if we want all terms we need to use 0 instead of -1
@@ -427,16 +433,13 @@ if (!function_exists('acclsc_sc')) {
             acclsc_enqueue_styles();
         }
 
-        // Main Query Arguments
-        $query_args = acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids, $show_pagination);
-
         if ($wrapper == 'true')
         {
             $output .= '<div class="' . esc_attr($class) . '">';
         }
 
         // Determine if we are getting taxonomy terms, a simple list of post, or post grouped by taxonomy terms.
-        if ($collections != false || $type == 'tax_terms' )
+        if ($collections != false || $type == 'tax_term' )
         {
             $terms = acclsc_handle_tax_query($tax, $show, $orderby, $order, $template);
 
@@ -444,6 +447,7 @@ if (!function_exists('acclsc_sc')) {
             {
                 if ($timber && class_exists('Timber'))
                 {
+
                     foreach ($terms as $term){
                         $output .= acclsc_render_terms_timber_template($term, $template);
                     }
@@ -455,6 +459,10 @@ if (!function_exists('acclsc_sc')) {
             }
 
         } elseif (empty($subtax)) {
+
+            // Main Query Arguments
+            $query_args = acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_posts, $tax, $term, $exclude, $ids, $show_pagination);
+
             // Execute the query
             $query = new WP_Query($query_args);
 

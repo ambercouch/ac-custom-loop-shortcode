@@ -1,0 +1,16 @@
+{# This is an example of a twig template.
+ it can be copied to your theme template folder if you are using the timber plugin #}
+    {% for term in terms %}
+        <div id="term-{{ term.term_id }}" class="c-accl-post-list__term-thumb" >
+            <div class="c-accl-term-thumb">
+            <h2 class="c-accl-term-thumb__heading">{{ term.name }}</h2>
+                {% if term.description %}
+                    {{ term.description | wpautop  }}
+                {% endif %}
+            <a href="{{ term.link }}">View More</a>
+            </div>
+        </div>
+    {% endfor %}
+
+
+
