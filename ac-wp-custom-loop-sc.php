@@ -112,7 +112,17 @@ function acclsc_invalid_post_type_message($type) {
 function acclsc_enqueue_styles() {
     $handle = 'ac_wp_custom_loop_styles';
     if (!wp_script_is($handle, 'enqueued')) {
-        wp_register_style('ac_wp_custom_loop_styles', plugin_dir_url(__FILE__) . 'assets/css/ac_wp_custom_loop_styles.css', array(), '20181016');
+
+        $style_path = plugin_dir_path(__FILE__) . 'assets/css/ac_wp_custom_loop_styles.css';
+        $style_version = file_exists($style_path) ? filemtime($style_path) : '1.0';
+
+        wp_register_style(
+            'ac_wp_custom_loop_styles',
+            plugin_dir_url(__FILE__) . 'assets/css/ac_wp_custom_loop_styles.css',
+            array(),
+            $style_version
+        );
+
         wp_enqueue_style('ac_wp_custom_loop_styles');
     }
 }
