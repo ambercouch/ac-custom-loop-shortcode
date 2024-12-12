@@ -3,7 +3,7 @@
   Plugin Name: AC Custom Loop Shortcode
   Plugin URI: https://ambercouch.co.uk
   Description: Shortcode  ( [ac_custom_loop] ) that allows you to easily list post, pages or custom posts with the WordPress content editor or in any widget that supports short code. A typical use would be to show your latest post on your homepage.
-  Version: 1.5.2
+  Version: 1.6
   Author: AmberCouch
   Author URI: http://ambercouch.co.uk
   Author Email: richard@ambercouch.co.uk
@@ -150,9 +150,9 @@ function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_
         $terms = explode(',', $term); // Split terms by comma
         $args['tax_query'][] = array(
             'taxonomy' => $tax,
-            'field' => 'slug',
+            'field' => 'slug', // Use slug to match categories
             'terms' => $terms,
-            'operator' => 'AND' // Ensures posts match all terms in the array
+            'operator' => 'IN' // Ensures posts match any term in the array
         );
     }
 
@@ -161,7 +161,7 @@ function acclsc_build_query_args($type, $show, $orderby, $order, $ignore_sticky_
         $exclude_terms = explode(',', $exclude); // Split exclude terms by comma
         $args['tax_query'][] = array(
             'taxonomy' => $tax,
-            'field' => 'slug',
+            'field' => 'slug', // Use slug to match categories
             'terms' => $exclude_terms,
             'operator' => 'NOT IN' // Excludes posts with any of these terms
         );
