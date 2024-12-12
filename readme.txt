@@ -4,7 +4,7 @@ Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts, timber, twig, custom post type
 Requires at least: 5.2
 Tested up to: 6.6
-Stable tag: 1.5.2
+Stable tag: 1.6
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -13,7 +13,7 @@ A simple WordPress plugin that creates a shortcode to loop through posts, pages,
 
 == Description ==
 
-Easily display posts, pages, or custom post types in content areas using a customizable shortcode. Display your latest posts, group by taxonomies, or use custom templates with Timber for Twig support.
+Easily display posts, pages, custom post types or taxonomy terms in content areas using a customizable shortcode. Display your latest posts, group by taxonomies, display your post tags or categories, use custom templates with Timber for Twig support.
 
 == Installation ==
 
@@ -28,6 +28,10 @@ Easily display posts, pages, or custom post types in content areas using a custo
 `[ac_custom_loop type="foo"]`
 This displays posts from the `foo` custom post type.
 
+**Display a specific post type and use a timber template:**
+`[ac_custom_loop timber='true' type="foo"]`
+This displays the same as the previous example but uses a nice timber template.
+
 **Display posts with specific tags:**
 `[ac_custom_loop type="post" tax="tag" term="foo"]`
 This displays posts tagged with `foo`.
@@ -37,8 +41,12 @@ This displays posts tagged with `foo`.
 Groups posts by categories, then by tags within each category.
 
 **Exclude posts by specific tags:**
-`[ac_custom_loop type="post" tax="tag" term="foo,bar" exclude="baz"]`
+`[ac_custom_loop type="post" tax="post_tag" term="foo,bar" exclude="baz"]`
 This displays posts tagged with `foo` and `bar`, but excludes those tagged with `baz`.
+
+**Display post tag terms:**
+`[ac_custom_loop type="category" tax="post_tag" ]`
+This displays all your category terms and link to those post.
 
 **Use a custom template for loop display:**
 To use a custom template, copy `loop-template.php` from the plugin folder to the root of your theme folder and modify as desired. You can also create templates for specific post types (e.g., `loop-template-post.php`).
@@ -80,6 +88,10 @@ Improved Timber support.
 Fixed release issues.
 
 == Changelog ==
+
+= 1.6 =
+* Added support for display taxonomy terms.
+* Added support for pagination.
 
 = 1.5.2 =
 * Fix template issue.
