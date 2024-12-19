@@ -3,7 +3,7 @@
   Plugin Name: AC Custom Loop Shortcode
   Plugin URI: https://ambercouch.co.uk
   Description: Shortcode  ( [ac_custom_loop] ) that allows you to easily list post, pages or custom posts with the WordPress content editor or in any widget that supports short code. A typical use would be to show your latest post on your homepage.
-  Version: 1.6
+  Version: 1.6.1
   Author: AmberCouch
   Author URI: http://ambercouch.co.uk
   Author Email: richard@ambercouch.co.uk
@@ -12,7 +12,10 @@
   License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-use Timber\Term;
+if (class_exists('Timber\Term')) {
+    class_alias('Timber\Term', 'CustomTerm');
+    $term = new CustomTerm($term_id);
+}
 
 defined('ABSPATH') or die('You do not have the required permissions');
 
@@ -21,9 +24,13 @@ defined('ABSPATH') or die('You do not have the required permissions');
  */
 
 function acclsc_get_template($timber, $template_path, $template_type , $template){
-    $timber_template_dir = is_array(Timber::$dirname) ? Timber::$dirname[0] : Timber::$dirname;
+    $timber_template_dir = '';
+    if ($timber !== false)
+    {
+        $timber_template_dir = is_array(Timber::$dirname) ? Timber::$dirname[0] : Timber::$dirname;
+    }
+    $theme_directory = ($timber !== false) ? $template_path . $timber_template_dir . '/' : $template_path;
 
-    $theme_directory = ($timber !== false) ? $template_path  . $timber_template_dir . '/' : $template_path;
     $plugin_directory = ($timber !== false) ? plugin_dir_path(__FILE__). $timber_template_dir . '/' : plugin_dir_path(__FILE__);
     $file_ext = ($timber !== false) ? '.twig' : '.php';
     $file_ext_len = strlen($file_ext);
