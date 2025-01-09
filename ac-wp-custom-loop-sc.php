@@ -18,54 +18,63 @@ defined('ABSPATH') or die('You do not have the required permissions');
  * Loop setup function
  */
 
-function acclsc_get_template($timber, $template_path, $template_type , $template){
+function acclsc_get_template($timber, $template_path, $template_type, $template) {
     $timber_template_dir = '';
-    if ($timber !== false)
-    {
+    if ($timber !== false) {
         $timber_template_dir = is_array(Timber::$dirname) ? Timber::$dirname[0] : Timber::$dirname;
     }
     $theme_directory = ($timber !== false) ? $template_path . $timber_template_dir . '/' : $template_path;
 
-    $plugin_directory = ($timber !== false) ? plugin_dir_path(__FILE__). $timber_template_dir . '/' : plugin_dir_path(__FILE__);
+    $plugin_directory = ($timber !== false) ? plugin_dir_path(__FILE__) . $timber_template_dir . '/' : plugin_dir_path(__FILE__);
     $file_ext = ($timber !== false) ? '.twig' : '.php';
     $file_ext_len = strlen($file_ext);
 
-    $template = (substr($template, -$file_ext_len ) === $file_ext ) ? substr_replace($template, "", -$file_ext_len) : $template;
-    $theme_template = $theme_directory  . $template . $file_ext;
-    if (is_array($template_type)){
-        $theme_template_type = $theme_directory  . $template . '-' . $template_type[0]. '-' . $template_type[1] . $file_ext;
-        $plugin_template_type = $plugin_directory . $template . '-' . $template_type[0]. '-' . $template_type[1] . $file_ext;
-        $theme_template_tax = $theme_directory  . $template . '-tax' . $file_ext;
+    $template = (substr($template, -$file_ext_len) === $file_ext) ? substr_replace($template, "", -$file_ext_len) : $template;
+    $theme_template = $theme_directory . $template . $file_ext;
+    if (is_array($template_type)) {
+        $theme_template_type = $theme_directory . $template . '-' . $template_type[0] . '-' . $template_type[1] . $file_ext;
+        $plugin_template_type = $plugin_directory . $template . '-' . $template_type[0] . '-' . $template_type[1] . $file_ext;
+        $theme_template_tax = $theme_directory . $template . '-tax' . $file_ext;
         $plugin_template_tax = $plugin_directory . $template . '-tax' . $file_ext;
-    }else{
-        $theme_template_type = $theme_directory  . $template . '-' . $template_type . $file_ext;
+    } else {
+        $theme_template_type = $theme_directory . $template . '-' . $template_type . $file_ext;
         $plugin_template_type = $plugin_directory . $template . '-' . $template_type . $file_ext;
         $theme_template_tax = '';
         $plugin_template_tax = '';
     }
 
+    // Select the appropriate template
+    if (file_exists($theme_template_type)) {
+        $selected_template = $theme_template_type;
+    } elseif (file_exists($theme_template_tax)) {
+        $selected_template = $theme_template_tax;
+    } elseif (file_exists($theme_template)) {
+        $selected_template = $theme_template;
+    } elseif (file_exists($plugin_template_type)) {
+        $selected_template = $plugin_template_type;
+    } elseif (file_exists($plugin_template_tax)) {
+        $selected_template = $plugin_template_tax;
+    } else {
+        $selected_template = $plugin_directory . "loop-template" . $file_ext;
 
-    if (file_exists($theme_template_type))
-    {
-        $template = $theme_template_type;
-    }elseif (file_exists( $theme_template_tax ))
-    {
-        $template = $theme_template_tax;
-    }elseif (file_exists( $theme_template ))
-    {
-        $template = $theme_template;
-    }elseif (file_exists( $plugin_template_type ))
-    {
-        $template = $plugin_template_type;
-    }elseif (file_exists( $plugin_template_tax ))
-    {
-        $template = $plugin_template_tax;
-    }else{
-        $template = $plugin_directory."loop-template" . $file_ext;
+        // Notify admin user if a custom template is missing
+        if ($template !== 'loop-template' && current_user_can('manage_options')) {
+            $message = sprintf(
+                __('<p><small><b>Admin Message</b><br>The template <b>' .$template . '</b> was passed but the file <b>' . $selected_template . '</b> could not be found<br>Falling back to the default template.</small></p>', 'acclsc'),
+                esc_html($template)
+            );
+            return [
+                'message' => $message,
+                'template' => $selected_template
+            ];
+        }
     }
 
-    return $template;
+    // Return the template path if no issues
+    return  $selected_template;
 }
+
+
 
 function acclsc_get_orderby($ids, $type) {
 
@@ -428,7 +437,8 @@ if (!function_exists('acclsc_sc')) {
 
         // Check if the template exists
         if (!file_exists($template)) {
-            return '<p>Template not found: ' . $template . '</p>';
+            $output .= $template['message'];
+            $template = $template['template'];
         }
 
         // Get the correct orderby
