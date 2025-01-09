@@ -12,11 +12,6 @@
   License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-if (class_exists('Timber\Term')) {
-    class_alias('Timber\Term', 'CustomTerm');
-    $term = new CustomTerm($term_id);
-}
-
 defined('ABSPATH') or die('You do not have the required permissions');
 
 /*
@@ -338,7 +333,7 @@ function acclsc_render_grouped_timber_template($grouped_posts, $template) {
 // Function to render the taxonomy terms timber template
 function acclsc_render_terms_timber_template( $term, $template){
     $context = Timber::get_context();
-    $context['terms'][] = new Term($term->term_id);
+    $context['terms'][] = new \Timber\Term($term->term_id);
     ob_start();
     Timber::render($template, $context);
     return ob_get_clean();
