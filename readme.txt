@@ -4,7 +4,7 @@ Donate link: http://ambercouch.co.uk/
 Tags: shortcode, list post, list custom posts, timber, twig, custom post type
 Requires at least: 5.2
 Tested up to: 6.7.1
-Stable tag: 1.7
+Stable tag: 1.7.1
 Requires PHP: 5.2.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -88,6 +88,9 @@ Improved Timber support.
 Fixed release issues.
 
 == Changelog ==
+
+= 1.7.1 =
+* Fixed better support for custom templates
 
 = 1.7 =
 * Added better support for custom templates
