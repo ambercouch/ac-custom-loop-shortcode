@@ -60,9 +60,13 @@ function acclsc_get_template($timber, $template_path, $template_type, $template)
         // Notify admin user if a custom template is missing
         if ($template !== 'loop-template' && current_user_can('manage_options')) {
             $message = sprintf(
-                __('<p><small><b>Admin Message</b><br>The template <b>' .$template . '</b> was passed but the file <b>' . $selected_template . '</b> could not be found<br>Falling back to the default template.</small></p>', 'acclsc'),
+                __('<p><small><b>Admin Message</b><br>The template <b>' .$template . '</b> was passed but the file <b>' . $theme_directory . $template . $file_ext . '</b> could not be found<br>Falling back to the default template.</small></p>', 'acclsc'),
                 esc_html($template)
             );
+            if ($timber !== false) {
+                //Get relative path
+                $selected_template = str_replace($theme_directory, '', $selected_template);
+            }
             return [
                 'message' => $message,
                 'template' => $selected_template
@@ -70,11 +74,13 @@ function acclsc_get_template($timber, $template_path, $template_type, $template)
         }
     }
 
+    if ($timber !== false) {
+        //Get relative path
+        $selected_template = str_replace($theme_directory, '', $selected_template);
+    }
     // Return the template path if no issues
     return  $selected_template;
 }
-
-
 
 function acclsc_get_orderby($ids, $type) {
 
