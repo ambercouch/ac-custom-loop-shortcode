@@ -442,7 +442,7 @@ if (!function_exists('acclsc_sc')) {
         $template = acclsc_get_template($timber, $template_path, $template_type, $template);
 
         // Check if the template exists
-        if (!file_exists($template) && is_array($template)) {
+        if (is_array($template)) {
             $output .= $template['message'];
             $template = $template['template'];
         }
